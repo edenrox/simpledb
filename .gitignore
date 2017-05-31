@@ -1,4 +1,15 @@
+# IntelliJ Project files
 .idea
 target
 *.iml
+
+# Compiled class file
 *.class
+
+# Log file
+*.log
+
+# Package Files #
+*.jar
+*.war
+*.ear
