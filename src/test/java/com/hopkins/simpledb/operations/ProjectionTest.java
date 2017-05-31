@@ -6,9 +6,6 @@ import org.junit.Test;
 
 import static com.google.common.truth.Truth.assertThat;
 
-/**
- * Created by edenrox on 5/29/2017.
- */
 public class ProjectionTest {
   private Table table;
   private SequentialScan scan;
@@ -27,6 +24,7 @@ public class ProjectionTest {
 
   @Test
   public void getTupleDescriptor_returnsProjectedColumnsInRequestedOrder() {
+    // SELECT is_hidden, id FROM makes
     Projection projection = new Projection(scan, "is_hidden", "id");
     projection.open();
 
@@ -40,6 +38,7 @@ public class ProjectionTest {
 
   @Test
   public void next_returnsEachTuple() {
+    // SELECT is_hidden, id FROM makes
     Projection projection = new Projection(scan, "is_hidden", "id");
     projection.open();
 

@@ -7,9 +7,6 @@ import org.junit.Test;
 
 import static com.google.common.truth.Truth.assertThat;
 
-/**
- * Created by edenrox on 5/31/2017.
- */
 public class LimitTest {
   private Table table;
   private SequentialScan scan;
@@ -32,6 +29,7 @@ public class LimitTest {
 
   @Test
   public void hasNext_withZeroLimit_returnsFalse() {
+    // SELECT * FROM tableName LIMIT 0
     limit = new Limit(scan, 0);
     limit.open();
     assertThat(limit.hasNext()).isFalse();
@@ -40,6 +38,7 @@ public class LimitTest {
 
   @Test
   public void hasNext_withLimit_returnsTrueUntilLimitReached() {
+    // SELECT * FROM tableName LIMIT 4
     limit = new Limit(scan, 4);
     limit.open();
     assertThat(limit.hasNext()).isTrue();
@@ -56,7 +55,8 @@ public class LimitTest {
 
   @Test
   public void getTupleDescriptor_returnsSourceTupleDescriptor() {
-    limit = new Limit(scan, 0);
+    // SELECT * FROM tableName LIMIT 1
+    limit = new Limit(scan, 1);
     limit.open();
     assertThat(limit.getTupleDescriptor()).isEqualTo(scan.getTupleDescriptor());
     limit.close();

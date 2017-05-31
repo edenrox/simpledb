@@ -6,9 +6,6 @@ import org.junit.Test;
 
 import static com.google.common.truth.Truth.assertThat;
 
-/**
- * Created by edenrox on 5/29/2017.
- */
 public class SequentialScanTest {
   private Table table;
 
@@ -24,6 +21,7 @@ public class SequentialScanTest {
 
   @Test
   public void getTupleDescriptor_returnsTableTupleDescriptor() {
+    // SELECT * FROM makes
     SequentialScan scan = new SequentialScan(table);
     scan.open();
 
@@ -34,6 +32,7 @@ public class SequentialScanTest {
 
   @Test
   public void next_returnsEachTuple() {
+    // SELECT * FROM makes
     SequentialScan scan = new SequentialScan(table);
     scan.open();
 
@@ -50,6 +49,7 @@ public class SequentialScanTest {
 
   @Test
   public void hasNext_returnsTrueUntilEnd() {
+    // SELECT * FROM makes
     SequentialScan scan = new SequentialScan(table);
     scan.open();
 
