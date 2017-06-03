@@ -25,7 +25,7 @@ public class SequentialScanTest {
     SequentialScan scan = new SequentialScan(table);
     scan.open();
 
-    assertThat(scan.getTupleDescriptor()).isEqualTo(table.getTupleDescriptor());
+    assertThat(scan.getSchema()).isEqualTo(table.getSchema());
 
     scan.close();
   }

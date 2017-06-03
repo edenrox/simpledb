@@ -1,5 +1,8 @@
 package com.hopkins.simpledb;
 
+import com.hopkins.simpledb.data.ColumnType;
+import com.hopkins.simpledb.data.Schema;
+
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
@@ -14,10 +17,10 @@ public class Tuple {
   private static final Charset ASCII = StandardCharsets.US_ASCII;
 
   private final int id;
-  private final TupleDescriptor descriptor;
+  private final Schema descriptor;
   private final ByteBuffer byteBuffer;
 
-  public Tuple(int id, TupleDescriptor descriptor, ByteBuffer byteBuffer) {
+  public Tuple(int id, Schema descriptor, ByteBuffer byteBuffer) {
     this.id = id;
     this.descriptor = descriptor;
     this.byteBuffer = byteBuffer;
@@ -27,7 +30,7 @@ public class Tuple {
     return id;
   }
 
-  public TupleDescriptor getDescriptor() {
+  public Schema getDescriptor() {
     return descriptor;
   }
 
@@ -36,7 +39,7 @@ public class Tuple {
   }
 
   public Object get(int index) {
-    ColumnType type = descriptor.getFieldType(index);
+    ColumnType type = descriptor.getColumnType(index);
     switch (type) {
       case BOOL:
         return getBoolean(index);
@@ -73,7 +76,7 @@ public class Tuple {
 
   public String getString(int index) {
     int offset = descriptor.getFieldOffset(index);
-    int length = descriptor.getFieldLength(index);
+    int length = descriptor.getColumnLength(index);
 
     byte[] dest = new byte[length];
     int strLength = length;
@@ -89,7 +92,7 @@ public class Tuple {
 
   public void setString(int index, String value) {
     int offset = descriptor.getFieldOffset(index);
-    int fieldLength = descriptor.getFieldLength(index);
+    int fieldLength = descriptor.getColumnLength(index);
 
     if (value.length() > fieldLength) {
       value = value.substring(0, fieldLength);

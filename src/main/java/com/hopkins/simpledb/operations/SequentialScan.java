@@ -2,7 +2,7 @@ package com.hopkins.simpledb.operations;
 
 import com.hopkins.simpledb.Table;
 import com.hopkins.simpledb.Tuple;
-import com.hopkins.simpledb.TupleDescriptor;
+import com.hopkins.simpledb.data.Schema;
 
 import java.util.NoSuchElementException;
 
@@ -35,8 +35,8 @@ public class SequentialScan implements DbIterator {
     return tuple;
   }
 
-  public TupleDescriptor getTupleDescriptor() {
-    return table.getTupleDescriptor();
+  public Schema getSchema() {
+    return table.getSchema();
   }
 
   public void reset() {

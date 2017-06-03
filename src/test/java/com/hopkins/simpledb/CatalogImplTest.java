@@ -1,5 +1,8 @@
 package com.hopkins.simpledb;
 
+import com.hopkins.simpledb.data.Column;
+import com.hopkins.simpledb.data.Schema;
+import com.hopkins.simpledb.table.CatalogImpl;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -10,26 +13,26 @@ import static com.google.common.truth.Truth.assertThat;
 /**
  * Created by edenrox on 5/29/2017.
  */
-public class CatalogTest {
+public class CatalogImplTest {
 
-  private Catalog catalog;
-  private TupleDescriptor tupleDescriptor;
+  private CatalogImpl catalog;
+  private Schema schema;
 
   @Before
   public void setup() {
-    catalog = new Catalog();
-    tupleDescriptor =
-        new TupleDescriptor(Arrays.asList(
-            ColumnDescriptor.newIntColumn("id"),
-            ColumnDescriptor.newStringColumn("name", 20),
-            ColumnDescriptor.newBoolColumn("is_hidden")
+    catalog = new CatalogImpl();
+    schema =
+        new Schema(Arrays.asList(
+            Column.newIntColumn("id"),
+            Column.newStringColumn("name", 20),
+            Column.newBoolColumn("is_hidden")
         ));
   }
 
   @Test
   public void createTable_addsTable() {
     String tableName = "makes";
-    catalog.createTable(tableName, tupleDescriptor);
+    catalog.createTable(tableName, schema);
 
     assertThat(catalog.hasTable(tableName)).isTrue();
   }
@@ -37,7 +40,7 @@ public class CatalogTest {
   @Test
   public void dropTable_removesTable() {
     String tableName = "makes";
-    catalog.createTable(tableName, tupleDescriptor);
+    catalog.createTable(tableName, schema);
     catalog.dropTable(tableName);
 
     assertThat(catalog.hasTable(tableName)).isFalse();

@@ -1,7 +1,7 @@
 package com.hopkins.simpledb.operations;
 
 import com.hopkins.simpledb.Tuple;
-import com.hopkins.simpledb.TupleDescriptor;
+import com.hopkins.simpledb.data.Schema;
 
 import java.util.NoSuchElementException;
 
@@ -16,7 +16,7 @@ public interface DbIterator {
 
   Tuple next() throws NoSuchElementException;
 
-  TupleDescriptor getTupleDescriptor();
+  Schema getSchema();
 
   void reset();
 

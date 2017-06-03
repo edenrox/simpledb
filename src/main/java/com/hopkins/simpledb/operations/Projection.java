@@ -1,8 +1,8 @@
 package com.hopkins.simpledb.operations;
 
-import com.hopkins.simpledb.ColumnDescriptor;
+import com.hopkins.simpledb.data.Column;
 import com.hopkins.simpledb.Tuple;
-import com.hopkins.simpledb.TupleDescriptor;
+import com.hopkins.simpledb.data.Schema;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -15,7 +15,7 @@ public class Projection implements DbIterator {
   private final String[] columns;
   private final DbIterator source;
 
-  private TupleDescriptor tupleDescriptor;
+  private Schema schema;
 
   public Projection(DbIterator source, String... columns) {
     this.source = source;
@@ -25,15 +25,15 @@ public class Projection implements DbIterator {
   public void open() {
     source.open();
 
-    TupleDescriptor sourceTupleDescriptor = source.getTupleDescriptor();
-    List<ColumnDescriptor> columnDescriptorList = new ArrayList<>(columns.length);
+    Schema sourceSchema = source.getSchema();
+    List<Column> columnList = new ArrayList<>(columns.length);
     for (String columnName : columns) {
-      int index = sourceTupleDescriptor.indexOf(columnName);
+      int index = sourceSchema.indexOf(columnName);
       if (index >= 0) {
-        columnDescriptorList.add(sourceTupleDescriptor.getColumnDescriptor(index));
+        columnList.add(sourceSchema.getColumn(index));
       }
     }
-    tupleDescriptor = new TupleDescriptor(columnDescriptorList);
+    schema = new Schema(columnList);
   }
 
   public boolean hasNext() {
@@ -43,25 +43,25 @@ public class Projection implements DbIterator {
   public Tuple next() {
     Tuple sourceTuple = source.next();
     byte[] srcData = sourceTuple.getData();
-    byte[] destData = new byte[tupleDescriptor.getLength()];
-    TupleDescriptor sourceTupleDescriptor = source.getTupleDescriptor();
+    byte[] destData = new byte[schema.getLength()];
+    Schema sourceSchema = source.getSchema();
 
-    for (int i = 0; i < tupleDescriptor.getSize(); i++) {
-      String columnName = tupleDescriptor.getFieldName(i);
-      int srcIndex = sourceTupleDescriptor.indexOf(columnName);
-      int srcOffset = sourceTupleDescriptor.getFieldOffset(srcIndex);
-      int srcLength = sourceTupleDescriptor.getFieldLength(srcIndex);
+    for (int i = 0; i < schema.getColumnCount(); i++) {
+      String columnName = schema.getColumnName(i);
+      int srcIndex = sourceSchema.indexOf(columnName);
+      int srcOffset = sourceSchema.getFieldOffset(srcIndex);
+      int srcLength = sourceSchema.getColumnLength(srcIndex);
 
-      int destOffset = tupleDescriptor.getFieldOffset(i);
+      int destOffset = schema.getFieldOffset(i);
 
       System.arraycopy(srcData, srcOffset, destData, destOffset, srcLength);
     }
 
-    return new Tuple(sourceTuple.getId(), tupleDescriptor, ByteBuffer.wrap(destData));
+    return new Tuple(sourceTuple.getId(), schema, ByteBuffer.wrap(destData));
   }
 
-  public TupleDescriptor getTupleDescriptor() {
-    return tupleDescriptor;
+  public Schema getSchema() {
+    return schema;
   }
 
   public void reset() {

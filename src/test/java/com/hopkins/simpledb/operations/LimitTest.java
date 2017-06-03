@@ -58,7 +58,7 @@ public class LimitTest {
     // SELECT * FROM tableName LIMIT 1
     limit = new Limit(scan, 1);
     limit.open();
-    assertThat(limit.getTupleDescriptor()).isEqualTo(scan.getTupleDescriptor());
+    assertThat(limit.getSchema()).isEqualTo(scan.getSchema());
     limit.close();
   }
 

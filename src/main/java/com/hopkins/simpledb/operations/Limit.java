@@ -1,7 +1,7 @@
 package com.hopkins.simpledb.operations;
 
 import com.hopkins.simpledb.Tuple;
-import com.hopkins.simpledb.TupleDescriptor;
+import com.hopkins.simpledb.data.Schema;
 
 import java.util.NoSuchElementException;
 
@@ -41,8 +41,8 @@ public class Limit implements DbIterator {
   }
 
   @Override
-  public TupleDescriptor getTupleDescriptor() {
-    return source.getTupleDescriptor();
+  public Schema getSchema() {
+    return source.getSchema();
   }
 
   @Override

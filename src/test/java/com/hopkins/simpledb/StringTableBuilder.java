@@ -1,5 +1,8 @@
 package com.hopkins.simpledb;
 
+import com.hopkins.simpledb.data.Column;
+import com.hopkins.simpledb.data.Schema;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -28,11 +31,11 @@ public class StringTableBuilder {
   }
 
   public Table build() {
-    List<ColumnDescriptor> columnDescList = new ArrayList<>();
+    List<Column> columnDescList = new ArrayList<>();
     for (String column : columns) {
-      columnDescList.add(ColumnDescriptor.newStringColumn(column, 20));
+      columnDescList.add(Column.newStringColumn(column, 20));
     }
-    TupleDescriptor desc = new TupleDescriptor(columnDescList);
+    Schema desc = new Schema(columnDescList);
     Table table = Table.createTable(name, desc);
     for (String[] row : rows) {
       Tuple tuple = table.createTuple();

@@ -1,6 +1,7 @@
 package com.hopkins.simpledb.operations;
 
 import com.hopkins.simpledb.*;
+import com.hopkins.simpledb.data.Schema;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -28,10 +29,10 @@ public class ProjectionTest {
     Projection projection = new Projection(scan, "is_hidden", "id");
     projection.open();
 
-    TupleDescriptor descriptor = projection.getTupleDescriptor();
-    assertThat(descriptor.getSize()).isEqualTo(2);
-    assertThat(descriptor.getFieldName(0)).isEqualTo("is_hidden");
-    assertThat(descriptor.getFieldName(1)).isEqualTo("id");
+    Schema descriptor = projection.getSchema();
+    assertThat(descriptor.getColumnCount()).isEqualTo(2);
+    assertThat(descriptor.getColumnName(0)).isEqualTo("is_hidden");
+    assertThat(descriptor.getColumnName(1)).isEqualTo("id");
 
     projection.close();
   }

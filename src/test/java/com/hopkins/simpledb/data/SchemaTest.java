@@ -1,4 +1,4 @@
-package com.hopkins.simpledb;
+package com.hopkins.simpledb.data;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -7,17 +7,17 @@ import java.util.Arrays;
 
 import static com.google.common.truth.Truth.assertThat;
 
-public class TupleDescriptorTest {
+public class SchemaTest {
 
-  private TupleDescriptor descriptor;
+  private Schema descriptor;
 
   @Before
   public void setup() {
     descriptor =
-        new TupleDescriptor(Arrays.asList(
-            ColumnDescriptor.newIntColumn("id"),
-            ColumnDescriptor.newStringColumn("name", 20),
-            ColumnDescriptor.newBoolColumn("is_hidden")
+        new Schema(Arrays.asList(
+            Column.newIntColumn("id"),
+            Column.newStringColumn("name", 20),
+            Column.newBoolColumn("is_hidden")
         ));
   }
 
@@ -39,7 +39,7 @@ public class TupleDescriptorTest {
 
   @Test
   public void getSize_returnsNumColumns() {
-    assertThat(descriptor.getSize()).isEqualTo(3);
+    assertThat(descriptor.getColumnCount()).isEqualTo(3);
   }
 
   @Test
