@@ -34,7 +34,7 @@ public class SchemaTest {
 
   @Test
   public void getLength_returnsFieldSizeSum() {
-    assertThat(descriptor.getLength()).isEqualTo(25);
+    assertThat(descriptor.getLength()).isEqualTo(45);
   }
 
   @Test
@@ -50,6 +50,6 @@ public class SchemaTest {
   @Test
   public void getOffset_returnsCorrectOffset() {
     assertThat(descriptor.getFieldOffset(1)).isEqualTo(4);
-    assertThat(descriptor.getFieldOffset(2)).isEqualTo(24);
+    assertThat(descriptor.getFieldOffset(2)).isEqualTo(44);
   }
 }

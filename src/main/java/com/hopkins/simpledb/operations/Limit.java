@@ -1,6 +1,6 @@
 package com.hopkins.simpledb.operations;
 
-import com.hopkins.simpledb.Tuple;
+import com.hopkins.simpledb.data.Record;
 import com.hopkins.simpledb.data.Schema;
 
 import java.util.NoSuchElementException;
@@ -9,7 +9,6 @@ import java.util.NoSuchElementException;
  * Created by edenrox on 5/31/2017.
  */
 public class Limit implements DbIterator {
-
   private final DbIterator source;
   private final int limit;
 
@@ -32,7 +31,7 @@ public class Limit implements DbIterator {
   }
 
   @Override
-  public Tuple next() {
+  public Record next() {
     if (index >= limit) {
       throw new NoSuchElementException();
     }

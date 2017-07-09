@@ -1,10 +1,9 @@
 package com.hopkins.simpledb.operations;
 
 import com.hopkins.simpledb.data.Column;
-import com.hopkins.simpledb.Tuple;
+import com.hopkins.simpledb.data.Record;
 import com.hopkins.simpledb.data.Schema;
 
-import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -40,24 +39,17 @@ public class Projection implements DbIterator {
     return source.hasNext();
   }
 
-  public Tuple next() {
-    Tuple sourceTuple = source.next();
-    byte[] srcData = sourceTuple.getData();
-    byte[] destData = new byte[schema.getLength()];
-    Schema sourceSchema = source.getSchema();
+  public Record next() {
+    Record sourceRecord = source.next();
+    Schema sourceSchema = sourceRecord.getSchema();
 
+    Record destRecord = new Record(schema);
     for (int i = 0; i < schema.getColumnCount(); i++) {
       String columnName = schema.getColumnName(i);
       int srcIndex = sourceSchema.indexOf(columnName);
-      int srcOffset = sourceSchema.getFieldOffset(srcIndex);
-      int srcLength = sourceSchema.getColumnLength(srcIndex);
-
-      int destOffset = schema.getFieldOffset(i);
-
-      System.arraycopy(srcData, srcOffset, destData, destOffset, srcLength);
+      destRecord.set(i, sourceRecord.get(srcIndex));
     }
-
-    return new Tuple(sourceTuple.getId(), schema, ByteBuffer.wrap(destData));
+    return destRecord;
   }
 
   public Schema getSchema() {

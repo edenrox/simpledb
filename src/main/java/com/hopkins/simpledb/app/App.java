@@ -1,6 +1,8 @@
 package com.hopkins.simpledb.app;
 
 import com.hopkins.simpledb.bufferpool.BufferPool;
+import com.hopkins.simpledb.data.RecordIo;
+import com.hopkins.simpledb.data.SchemaIo;
 import com.hopkins.simpledb.table.Catalog;
 import com.hopkins.simpledb.table.CatalogImpl;
 
@@ -13,7 +15,9 @@ public class App {
     ServiceLocator locator = ServiceLocator.getInstance();
     locator
         .bind(BufferPool.class, BufferPool.newDefaultPool(locator))
-        .bind(Catalog.class, new CatalogImpl())
+        .bind(Catalog.class, new CatalogImpl(locator))
+        .bind(RecordIo.class, new RecordIo())
+        .bind(SchemaIo.class, new SchemaIo())
         ;
 
 

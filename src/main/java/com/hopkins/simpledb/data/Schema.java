@@ -26,7 +26,12 @@ public class Schema {
     int offset = 0;
     for (int i = 0; i < columnList.size(); i++) {
       offsets[i] = offset;
-      offset += columnList.get(i).getLength();
+      int columnLength = columnList.get(i).getLength();
+      offset += columnLength;
+      if (columnList.get(i).getType() == ColumnType.STRING) {
+        // two bytes per character
+        offset += columnLength;
+      }
     }
     this.length = offset;
   }

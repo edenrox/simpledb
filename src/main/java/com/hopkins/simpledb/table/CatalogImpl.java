@@ -1,11 +1,11 @@
 package com.hopkins.simpledb.table;
 
-import com.hopkins.simpledb.*;
+import com.hopkins.simpledb.app.ServiceLocator;
+import com.hopkins.simpledb.bufferpool.DiskManager;
 import com.hopkins.simpledb.data.Schema;
+import com.hopkins.simpledb.heapfile.HeapFile;
 import com.hopkins.simpledb.util.Preconditions;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -13,10 +13,12 @@ import java.util.List;
  * Created by edenrox on 5/29/2017.
  */
 public class CatalogImpl implements Catalog {
+  private final ServiceLocator serviceLocator;
   private final List<Table> tableList;
 
-  public CatalogImpl() {
-    tableList = new ArrayList<>();
+  public CatalogImpl(ServiceLocator serviceLocator) {
+    this.serviceLocator = serviceLocator;
+    this.tableList = new ArrayList<>();
   }
 
   @Override
@@ -37,15 +39,10 @@ public class CatalogImpl implements Catalog {
   public Table createTable(String name, Schema schema) {
     Preconditions.checkState(!hasTable(name));
 
-    try {
-      File fileToOpen = new File(name + ".table");
-      fileToOpen.createNewFile();
-      Table table = new Table(tableList.size(), name, schema, new HeapFile(fileToOpen));
-      tableList.add(table);
-      return table;
-    } catch (IOException ex) {
-      throw new RuntimeException(ex);
-    }
+    Table table = new Table(tableList.size(), name, schema);
+    tableList.add(table);
+    HeapFile.createNew(table, serviceLocator);
+    return table;
   }
 
   @Override
@@ -58,13 +55,14 @@ public class CatalogImpl implements Catalog {
     int index = indexOf(tableName);
     if (index >= 0) {
       tableList.set(index, null);
+      DiskManager.deleteFile(index);
     }
   }
 
   private int indexOf(String tableName) {
     for (int i = 0; i < tableList.size(); i++) {
       Table table = tableList.get(i);
-      if (table.getName().equals(tableName)) {
+      if (table != null && table.getName().equals(tableName)) {
         return i;
       }
     }

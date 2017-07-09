@@ -33,4 +33,7 @@ public class BufferPage {
     return buffer;
   }
 
+  public int getBufferSize() {
+    return buffer.length;
+  }
 }

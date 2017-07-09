@@ -1,6 +1,7 @@
 package com.hopkins.simpledb.operations;
 
 import com.hopkins.simpledb.*;
+import com.hopkins.simpledb.data.Record;
 import com.hopkins.simpledb.data.Schema;
 import org.junit.Before;
 import org.junit.Test;
@@ -8,25 +9,22 @@ import org.junit.Test;
 import static com.google.common.truth.Truth.assertThat;
 
 public class ProjectionTest {
-  private Table table;
-  private SequentialScan scan;
+  private RecordIterator iterator;
 
   @Before
   public void setup() {
-    table = new StringTableBuilder()
+    iterator = new StringRecordIteratorBuilder()
         .setName("makes")
         .setColumns("id", "name", "is_hidden")
         .addRow("1", "Ford", "false")
         .addRow("2", "Chevrolet", "false")
         .build();
-
-    scan = new SequentialScan(table);
   }
 
   @Test
   public void getTupleDescriptor_returnsProjectedColumnsInRequestedOrder() {
     // SELECT is_hidden, id FROM makes
-    Projection projection = new Projection(scan, "is_hidden", "id");
+    Projection projection = new Projection(iterator, "is_hidden", "id");
     projection.open();
 
     Schema descriptor = projection.getSchema();
@@ -40,14 +38,13 @@ public class ProjectionTest {
   @Test
   public void next_returnsEachTuple() {
     // SELECT is_hidden, id FROM makes
-    Projection projection = new Projection(scan, "is_hidden", "id");
+    Projection projection = new Projection(iterator, "is_hidden", "id");
     projection.open();
 
-    Tuple tuple = projection.next();
-    assertThat(tuple.getString(tuple.indexOf("id"))).isEqualTo("1");
+    Record record = projection.next();
+    assertThat(record.get("id")).isEqualTo("1");
 
-    tuple = projection.next();
-    assertThat(tuple.getString(tuple.indexOf("id"))).isEqualTo("2");
+    record = projection.next();
+    assertThat(record.get("id")).isEqualTo("2");
   }
-
 }

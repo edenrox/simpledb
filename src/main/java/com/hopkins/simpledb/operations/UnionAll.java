@@ -1,6 +1,6 @@
 package com.hopkins.simpledb.operations;
 
-import com.hopkins.simpledb.Tuple;
+import com.hopkins.simpledb.data.Record;
 import com.hopkins.simpledb.data.Schema;
 import com.hopkins.simpledb.util.Preconditions;
 
@@ -37,7 +37,7 @@ public class UnionAll implements DbIterator {
   }
 
   @Override
-  public Tuple next() throws NoSuchElementException {
+  public Record next() throws NoSuchElementException {
     if (first.hasNext()) {
       return first.next();
     } else {

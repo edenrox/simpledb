@@ -1,10 +1,9 @@
 package com.hopkins.simpledb.operations;
 
 import com.hopkins.simpledb.data.Column;
-import com.hopkins.simpledb.Tuple;
+import com.hopkins.simpledb.data.Record;
 import com.hopkins.simpledb.data.Schema;
 
-import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -18,7 +17,7 @@ public class NestedLoopJoin implements DbIterator {
   private final DbIterator innerSource;
 
   private Schema schema;
-  private Tuple outerTuple;
+  private Record outerRecord;
 
   public NestedLoopJoin(DbIterator outerSource, DbIterator innerSource) {
     this.outerSource = outerSource;
@@ -42,12 +41,12 @@ public class NestedLoopJoin implements DbIterator {
 
   @Override
   public boolean hasNext() {
-    if (!outerSource.hasNext() && outerTuple == null) {
+    if (!outerSource.hasNext() && outerRecord == null) {
       // outerSource is empty
       return false;
     }
-    if (outerTuple == null) {
-      outerTuple = outerSource.next();
+    if (outerRecord == null) {
+      outerRecord = outerSource.next();
     }
 
     if (!innerSource.hasNext()) {
@@ -55,7 +54,7 @@ public class NestedLoopJoin implements DbIterator {
         // we are at the end of both outerSource and innerSource
         return false;
       } else {
-        outerTuple = outerSource.next();
+        outerRecord = outerSource.next();
         innerSource.reset();
         if (!innerSource.hasNext()) {
           // innerSource is empty
@@ -67,19 +66,21 @@ public class NestedLoopJoin implements DbIterator {
   }
 
   @Override
-  public Tuple next() throws NoSuchElementException {
+  public Record next() throws NoSuchElementException {
     if (!hasNext()) {
       throw new NoSuchElementException();
     }
-    Tuple innerTuple = innerSource.next();
+    Record innerRecord = innerSource.next();
+    int outerColumnCount = outerRecord.getSchema().getColumnCount();
 
-    byte[] dest = new byte[schema.getLength()];
-    byte[] outerData = outerTuple.getData();
-    byte[] innerData = innerTuple.getData();
-    System.arraycopy(outerData, 0, dest, 0, outerData.length);
-    System.arraycopy(innerData, 0, dest, outerData.length, innerData.length);
-
-    return new Tuple(-1 /* id */, schema, ByteBuffer.wrap(dest));
+    Record record = new Record(schema);
+    for (int i = 0; i < schema.getColumnCount(); i++) {
+      Object value = i < outerColumnCount
+          ? outerRecord.get(i)
+          : innerRecord.get(i - outerColumnCount);
+      record.set(i, value);
+    }
+    return record;
   }
 
   @Override

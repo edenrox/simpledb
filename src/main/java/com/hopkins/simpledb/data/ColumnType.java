@@ -4,10 +4,10 @@ package com.hopkins.simpledb.data;
  * Created by edenrox on 5/29/2017.
  */
 public enum ColumnType {
-  INTEGER('c'),
-  STRING('s'),
-  DOUBLE('d'),
-  BOOL('b');
+  INTEGER('c', 0),
+  STRING('s', ""),
+  DOUBLE('d', 0.0),
+  BOOL('b', false);
 
   public static ColumnType fromValue(char value) {
     switch (value) {
@@ -25,12 +25,18 @@ public enum ColumnType {
   }
 
   private final char value;
+  private final Object defaultValue;
 
-  ColumnType(char value) {
+  ColumnType(char value, Object defaultValue) {
     this.value = value;
+    this.defaultValue = defaultValue;
   }
 
   public char getValue() {
     return value;
+  }
+
+  public Object getDefaultValue() {
+    return defaultValue;
   }
 }

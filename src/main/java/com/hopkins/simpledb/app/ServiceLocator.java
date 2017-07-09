@@ -22,7 +22,7 @@ public class ServiceLocator {
 
   public <T> T get(Class<T> clazz) {
     if (!map.containsKey(clazz)) {
-      throw new IllegalStateException("Class not found: " + clazz);
+      throw new IllegalStateException("Class not found in ServiceLocator: " + clazz);
     }
     return (T) map.get(clazz);
   }

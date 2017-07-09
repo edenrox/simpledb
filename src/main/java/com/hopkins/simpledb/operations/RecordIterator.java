@@ -1,6 +1,6 @@
 package com.hopkins.simpledb.operations;
 
-import com.hopkins.simpledb.Tuple;
+import com.hopkins.simpledb.data.Record;
 import com.hopkins.simpledb.data.Schema;
 
 import java.util.Iterator;
@@ -9,13 +9,13 @@ import java.util.NoSuchElementException;
 /**
  * Created by ian_000 on 5/31/2017.
  */
-public class TupleIterator implements DbIterator {
+public class RecordIterator implements DbIterator {
   private final Schema schema;
-  private final Iterable<Tuple> iterable;
+  private final Iterable<Record> iterable;
 
-  private Iterator<Tuple> iterator;
+  private Iterator<Record> iterator;
 
-  public TupleIterator(Schema schema, Iterable<Tuple> iterable) {
+  public RecordIterator(Schema schema, Iterable<Record> iterable) {
     this.schema = schema;
     this.iterable = iterable;
   }
@@ -31,7 +31,7 @@ public class TupleIterator implements DbIterator {
   }
 
   @Override
-  public Tuple next() throws NoSuchElementException {
+  public Record next() throws NoSuchElementException {
     return iterator.next();
   }
 

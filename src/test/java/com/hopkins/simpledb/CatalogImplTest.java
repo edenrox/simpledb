@@ -1,5 +1,6 @@
 package com.hopkins.simpledb;
 
+import com.hopkins.simpledb.app.ServiceLocator;
 import com.hopkins.simpledb.data.Column;
 import com.hopkins.simpledb.data.Schema;
 import com.hopkins.simpledb.table.CatalogImpl;
@@ -15,12 +16,14 @@ import static com.google.common.truth.Truth.assertThat;
  */
 public class CatalogImplTest {
 
+  private ServiceLocator serviceLocator;
   private CatalogImpl catalog;
   private Schema schema;
 
   @Before
   public void setup() {
-    catalog = new CatalogImpl();
+    serviceLocator = new ServiceLocator();
+    catalog = new CatalogImpl(serviceLocator);
     schema =
         new Schema(Arrays.asList(
             Column.newIntColumn("id"),
