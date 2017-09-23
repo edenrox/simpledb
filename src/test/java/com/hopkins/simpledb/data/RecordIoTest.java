@@ -22,7 +22,7 @@ public class RecordIoTest {
   @Before
   public void setup() {
     schema = new Schema(Arrays.asList(
-        Column.newIntColumn("id"),
+        Column.ROW_ID,
         Column.newStringColumn("name", 10),
         Column.newBoolColumn("is_active")
     ));

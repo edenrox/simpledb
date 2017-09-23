@@ -18,7 +18,7 @@ public class RecordTest {
   @Before
   public void setup() {
     schema = new Schema(Arrays.asList(
-        Column.newIntColumn("id"),
+        Column.ROW_ID,
         Column.newStringColumn("name", 20)));
     record = new Record(schema);
   }
@@ -31,6 +31,12 @@ public class RecordTest {
   @Test(expected = IllegalArgumentException.class)
   public void set_withWrongType_throws() {
     record.set(0, "test");
+  }
+
+  public void getRowId_returnsRowId() {
+    int rowId = 14;
+    record.set(0, rowId);
+    assertThat(record.getRowId()).isEqualTo(rowId);
   }
 
   @Test

@@ -15,7 +15,7 @@ public class SchemaTest {
   public void setup() {
     descriptor =
         new Schema(Arrays.asList(
-            Column.newIntColumn("id"),
+            Column.ROW_ID,
             Column.newStringColumn("name", 20),
             Column.newBoolColumn("is_hidden")
         ));
@@ -23,7 +23,7 @@ public class SchemaTest {
 
   @Test
   public void indexOf_returnsCorrectIndex() {
-    assertThat(descriptor.indexOf("id")).isEqualTo(0);
+    assertThat(descriptor.indexOf(Column.ROW_ID_NAME)).isEqualTo(0);
     assertThat(descriptor.indexOf("is_hidden")).isEqualTo(2);
   }
 

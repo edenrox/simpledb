@@ -16,8 +16,6 @@ public class Schema {
 
   public Schema(List<Column> columnList) {
     Preconditions.checkArgument(!columnList.isEmpty());
-    Preconditions.checkArgument(columnList.get(0) == Column.ROW_ID);
-
     this.columnList = Collections.unmodifiableList(new ArrayList<>(columnList));
 
     // Calculate offsets + length

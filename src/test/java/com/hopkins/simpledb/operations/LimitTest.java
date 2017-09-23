@@ -57,5 +57,4 @@ public class LimitTest {
     assertThat(limit.getSchema()).isEqualTo(iterator.getSchema());
     limit.close();
   }
-
 }

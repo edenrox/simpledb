@@ -1,6 +1,8 @@
 package com.hopkins.simpledb.catalog;
 
+import com.hopkins.simpledb.data.Column;
 import com.hopkins.simpledb.data.Schema;
+import com.hopkins.simpledb.util.Preconditions;
 
 public class TableDescriptor {
   private final String name;
@@ -8,6 +10,8 @@ public class TableDescriptor {
   private final Schema schema;
 
   public TableDescriptor(String name, int rootPageNumber, Schema schema) {
+    Preconditions.checkArgument(schema.getColumn(0) == Column.ROW_ID);
+
     this.name = name;
     this.rootPageNumber = rootPageNumber;
     this.schema = schema;
