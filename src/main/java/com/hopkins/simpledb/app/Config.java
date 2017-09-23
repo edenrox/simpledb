@@ -1,8 +1,13 @@
 package com.hopkins.simpledb.app;
 
-/**
- * Created by ian_000 on 7/3/2017.
- */
-public class Config {
-  public static final int PAGE_SIZE = 4 * 1024;
+public interface Config {
+
+  /** Returns the size of each database page measured in bytes. */
+  int getPageSize();
+
+  /** Returns the maximum size of the page cache measured in bytes. */
+  int getCacheSize();
+
+  /** Returns the name of the built-in catalog table. */
+  String getCatalogTableName();
 }

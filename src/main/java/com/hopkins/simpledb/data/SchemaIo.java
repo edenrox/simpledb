@@ -1,6 +1,5 @@
 package com.hopkins.simpledb.data;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -8,7 +7,7 @@ import java.util.List;
  * Created by ian_000 on 6/1/2017.
  */
 public class SchemaIo {
-  public static Schema readSchema(ByteReader reader) throws IOException {
+  public static Schema readSchema(ByteReader reader) {
     int numColumns = reader.readInt();
     List<Column> columnList = new ArrayList<>(numColumns);
     for (int i = 0; i < numColumns; i++) {
@@ -34,12 +33,14 @@ public class SchemaIo {
         return Column.newStringColumn(name, length);
       case INTEGER:
         return Column.newIntColumn(name);
+      case BLOB:
+        return Column.newBlobColumn(name, length);
       default:
         throw new IllegalArgumentException("Unknown column type: " + type);
     }
   }
 
-  public static void writeSchema(ByteWriter writer, Schema schema) throws IOException {
+  public static void writeSchema(ByteWriter writer, Schema schema) {
     writer.writeInt(schema.getColumnCount());
     for (int i = 0; i < schema.getColumnCount(); i++) {
       writeColumn(writer, schema.getColumn(i));

@@ -7,7 +7,8 @@ public enum ColumnType {
   INTEGER('c', 0),
   STRING('s', ""),
   DOUBLE('d', 0.0),
-  BOOL('b', false);
+  BOOL('z', false),
+  BLOB('b', new byte[0]);
 
   public static ColumnType fromValue(char value) {
     switch (value) {
@@ -17,8 +18,10 @@ public enum ColumnType {
         return STRING;
       case 'd':
         return DOUBLE;
-      case 'b':
+      case 'z':
         return BOOL;
+      case 'b':
+        return BLOB;
       default:
         throw new IllegalArgumentException("Unknown value: " + value);
     }

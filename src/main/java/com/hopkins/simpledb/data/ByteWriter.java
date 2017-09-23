@@ -31,15 +31,15 @@ public class ByteWriter {
 
   public void writeChar(char value) {
     buffer[position] = (byte) (value >>> 8);
-    buffer[position+1] = (byte) value;
+    buffer[position + 1] = (byte) value;
     position += 2;
   }
 
   public void writeInt(int value) {
     buffer[position] = (byte) (value >>> 24);
-    buffer[position+1] = (byte) (value >>> 16);
-    buffer[position+2] = (byte) (value >>> 8);
-    buffer[position+3] = (byte) value;
+    buffer[position + 1] = (byte) (value >>> 16);
+    buffer[position + 2] = (byte) (value >>> 8);
+    buffer[position + 3] = (byte) value;
     position += 4;
   }
 
@@ -63,6 +63,16 @@ public class ByteWriter {
         writeChar(value.charAt(i));
       } else {
         writeChar((char) 0);
+      }
+    }
+  }
+
+  public void writeFixedLengthBlob(byte[] value, int length) {
+    for (int i = 0; i < length; i++) {
+      if (i < value.length) {
+        writeByte(value[i]);
+      } else {
+        writeByte((byte) 0);
       }
     }
   }

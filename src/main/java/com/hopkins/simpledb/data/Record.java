@@ -3,7 +3,6 @@ package com.hopkins.simpledb.data;
 import com.hopkins.simpledb.util.Preconditions;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -25,14 +24,22 @@ public class Record {
     return schema;
   }
 
+  public int getRowId() {
+    return getInt(Column.ROW_ID_NAME);
+  }
+
   public Object get(int index) {
+    Preconditions.checkArgument(index >= 0);
     return values.get(index);
   }
 
   public Object get(String columnName) {
     int index = schema.indexOf(columnName);
-    Preconditions.checkArgument(index >= 0);
-    return values.get(index);
+    return get(index);
+  }
+
+  public int getInt(String columnName) {
+    return (Integer) get(columnName);
   }
 
   public void set(int index, Object value) {

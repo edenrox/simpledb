@@ -1,19 +1,13 @@
 package com.hopkins.simpledb.data;
 
-import com.hopkins.simpledb.util.ArrayUtil;
-
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.IOException;
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 
 /**
  * Created by ian_000 on 6/1/2017.
  */
 public class RecordIo {
 
-  public void writeRecord(ByteWriter writer, Record record) {
+  public static void writeRecord(ByteWriter writer, Record record) {
     try {
       Schema schema = record.getSchema();
       for (int i = 0; i < schema.getColumnCount(); i++) {
@@ -26,7 +20,7 @@ public class RecordIo {
     }
   }
 
-  private void writeValue(ByteWriter writer, Column column, Object value) throws IOException {
+  private static void writeValue(ByteWriter writer, Column column, Object value) throws IOException {
     switch (column.getType()) {
       case BOOL:
         writer.writeBoolean((boolean) value);
@@ -40,12 +34,14 @@ public class RecordIo {
       case STRING:
         writer.writeFixedLengthString((String) value, column.getLength());
         break;
+      case BLOB:
+        writer.writeFixedLengthBlob((byte[]) value, column.getLength());
       default:
         throw new IllegalArgumentException("Unknown column type: " + column.getType());
     }
   }
 
-  public Record readRecord(ByteReader reader, Schema schema) {
+  public static Record readRecord(ByteReader reader, Schema schema) {
     try {
       Record record = new Record(schema);
       for (int i = 0; i < schema.getColumnCount(); i++) {
@@ -58,7 +54,7 @@ public class RecordIo {
     }
   }
 
-  private Object readValue(ByteReader reader, Column column) throws IOException {
+  private static Object readValue(ByteReader reader, Column column) throws IOException {
     switch (column.getType()) {
       case BOOL:
         return reader.readBoolean();
@@ -68,6 +64,8 @@ public class RecordIo {
         return reader.readInt();
       case STRING:
         return reader.readFixedLengthString(column.getLength());
+      case BLOB:
+        return reader.readFixedLengthBlob(column.getLength());
       default:
         throw new IllegalArgumentException("Unknown column type: " + column.getType());
     }

@@ -54,8 +54,8 @@ public class RecordIoTest {
     // Setup
     Record toWrite = new Record(schema);
     toWrite.set(0, 12);
-    toWrite.set(1, "Pontiac");
-    toWrite.set(2, false);
+    toWrite.set(1, "Chevrolet");
+    toWrite.set(2, true);
     recordIo.writeRecord(byteWriter, toWrite);
 
     // Execute
@@ -63,7 +63,7 @@ public class RecordIoTest {
 
     // Verify
     assertThat(fromReader.get(0)).isEqualTo(12);
-    assertThat(fromReader.get(1)).isEqualTo("Pontiac");
-    assertThat(fromReader.get(2)).isEqualTo(false);
+    assertThat(fromReader.get(1)).isEqualTo("Chevrolet");
+    assertThat(fromReader.get(2)).isEqualTo(true);
   }
 }

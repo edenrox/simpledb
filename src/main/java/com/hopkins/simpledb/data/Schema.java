@@ -1,7 +1,5 @@
 package com.hopkins.simpledb.data;
 
-import com.hopkins.simpledb.data.Column;
-import com.hopkins.simpledb.data.ColumnType;
 import com.hopkins.simpledb.util.Preconditions;
 
 import java.util.ArrayList;
@@ -18,6 +16,7 @@ public class Schema {
 
   public Schema(List<Column> columnList) {
     Preconditions.checkArgument(!columnList.isEmpty());
+    Preconditions.checkArgument(columnList.get(0) == Column.ROW_ID);
 
     this.columnList = Collections.unmodifiableList(new ArrayList<>(columnList));
 
@@ -36,12 +35,16 @@ public class Schema {
     this.length = offset;
   }
 
-  /** Returns the number of columns in this descriptor. */
+  /**
+   * Returns the number of columns in this descriptor.
+   */
   public int getColumnCount() {
     return columnList.size();
   }
 
-  /** Return the length of a tuple with this descriptor in bytes. */
+  /**
+   * Return the length of a tuple with this descriptor in bytes.
+   */
   public int getLength() {
     return length;
   }
@@ -103,10 +106,12 @@ public class Schema {
       builder
           .append(column.getName())
           .append(" ")
-          .append(column.getType());
+          .append(column.getType())
+          .append(", ");
     });
     builder.append("],");
-    builder.append(" length: ").append(length).append("}");
+    builder.append(" length: ").append(length);
+    builder.append("}");
 
     return builder.toString();
   }

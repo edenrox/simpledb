@@ -4,6 +4,9 @@ package com.hopkins.simpledb.data;
  * Created by edenrox on 5/29/2017.
  */
 public class Column {
+  public static final String ROW_ID_NAME = "_id";
+  public static final Column ROW_ID = Column.newIntColumn(ROW_ID_NAME);
+
   private final ColumnType type;
   private final String name;
   private final int length;
@@ -22,6 +25,10 @@ public class Column {
 
   public static Column newDoubleColumn(String name) {
     return new Column(ColumnType.DOUBLE, name, 8);
+  }
+
+  public static Column newBlobColumn(String name, int length) {
+    return new Column(ColumnType.BLOB, name, length);
   }
 
   private Column(ColumnType type, String name, int length) {
