@@ -1,73 +1,58 @@
 package com.hopkins.simpledb.freepages;
 
-import com.hopkins.simpledb.app.CacheManager;
-import com.hopkins.simpledb.app.FreePageManager;
-import com.hopkins.simpledb.app.Page;
-import com.hopkins.simpledb.app.PageType;
+import com.hopkins.simpledb.app.*;
 import com.hopkins.simpledb.data.ByteReader;
 import com.hopkins.simpledb.data.ByteWriter;
 
 
 public class FreePageManagerImpl implements FreePageManager {
-  private static final int NO_FREE_PAGE_INDEX = -1;
-  private static final int ROOT_PAGE = 0;
-
-  private int freePage = NO_FREE_PAGE_INDEX;
-
   private final CacheManager cacheManager;
 
   public FreePageManagerImpl(CacheManager cacheManager) {
     this.cacheManager = cacheManager;
   }
 
+  private FreePage getRootFreePage() {
+    Page rootPage = cacheManager.getPage(Page.CATALOG_ROOT_PAGE_NUMBER);
+    return new FreePage(rootPage);
+  }
+
   @Override
   public void freePage(int pageNumber) {
-    // Set the freePage on the catalog root page
-    Page rootPage = cacheManager.getPage(Page.CATALOG_ROOT_PAGE_NUMBER);
-    ByteReader rootByteReader = new ByteReader(rootPage.getBuffer());
-    rootByteReader.setPosition(1);
-    int oldFreePageNumber = rootByteReader.readInt();
-    ByteWriter rootByteWriter = new ByteWriter(rootPage.getBuffer());
-    rootByteReader.setPosition(1);
-    rootByteWriter.writeInt(pageNumber);
-    rootPage.setIsDirty(true);
-    rootPage.unpin();
+    // Get the head of the free page list
+    FreePage rootFreePage = getRootFreePage();
+    int oldFreePageNumber = rootFreePage.getNextFreePage();
 
-    // Set the type and next free page items on the newly free page
-    Page freePage = cacheManager.getPage(pageNumber);
-    ByteWriter freePageWriter = new ByteWriter(freePage.getBuffer());
-    freePageWriter.setPosition(0);
-    freePageWriter.writeByte(PageType.FREE.getValue());
-    freePageWriter.writeInt(oldFreePageNumber);
-    freePage.setIsDirty(true);
-    freePage.unpin();
+    // Initialize the requested page as a free page
+    FreePage newFreePage = FreePage.initializePage(cacheManager.getPage(pageNumber));
+    newFreePage.setNextFreePage(oldFreePageNumber);
+    newFreePage.unpin();
+
+    // Update the head of the free page list
+    rootFreePage.setNextFreePage(pageNumber);
+    rootFreePage.unpin();
   }
 
   @Override
   public int allocPage() {
     // Find the free page pointed to from the catalog root
-    Page rootPage = cacheManager.getPage(Page.CATALOG_ROOT_PAGE_NUMBER);
-    ByteReader rootByteReader = new ByteReader(rootPage.getBuffer());
-    rootByteReader.setPosition(1);
-    int freePageNumber = rootByteReader.readInt();
+    FreePage rootFreePage = getRootFreePage();
+    int freePageNumber = rootFreePage.getNextFreePage();
 
-    if (freePageNumber <= 0) {
+    if (freePageNumber == FreePageManager.NO_FREE_PAGE_INDEX) {
       // No free pages, allocate a new page
+      FreePage freePage = FreePage.initializePage(cacheManager.getNewPage());
+      freePageNumber = freePage.getPageNumber();
+      freePage.unpin();
+      return freePageNumber;
     }
 
-    // Free page found, read the next free page number
-    Page freePage = cacheManager.getPage(freePageNumber);
-    ByteReader freePageReader = new ByteReader(freePage.getBuffer());
-    freePageReader.setPosition(1);
-    int nextFreePageNumber = freePageReader.readInt();
+    FreePage freePage = new FreePage(cacheManager.getPage(freePageNumber));
+    int nextFreePageNumber = freePage.getNextFreePage();
     freePage.unpin();
 
     // Update the root page
-    ByteWriter rootWriter = new ByteWriter(rootPage.getBuffer());
-    rootWriter.setPosition(1);
-    rootWriter.writeInt(nextFreePageNumber);
-    rootPage.setIsDirty(true);
-    rootPage.unpin();
+    rootFreePage.setNextFreePage(nextFreePageNumber);
 
     return freePageNumber;
   }
