@@ -9,10 +9,10 @@ production database, just a learning tool.
 ## Current Support
 
 * Data serialization/deserialization for:
-  * Strings, primitives, records, schemas 
-* In Memory Tables + Catalog
-* Buffer Pool
-* Heap File (in progress)
+  * Strings, primitives, records, schemas
+* On Disk Tables + Catalog
+* Buffer Pool - CacheManager
+* Heap File - in progress
 * Nested Loops Join (JOINs in FROM clause)
 * Projection (SELECT clause)
 * Limit (LIMIT clause)
@@ -25,7 +25,6 @@ production database, just a learning tool.
 
 ## Todo List
 
-* On Disk Catalog
 * B-Tree
 * Sort
 * Group By
