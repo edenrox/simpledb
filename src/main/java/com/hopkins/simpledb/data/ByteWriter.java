@@ -30,22 +30,22 @@ public class ByteWriter {
   }
 
   public void writeChar(char value) {
-    buffer[position] = (byte) (value >>> 8);
+    buffer[position] = (byte) ((value >> 8) & 0xFF);
     buffer[position + 1] = (byte) value;
     position += 2;
   }
 
   public void writeInt(int value) {
-    buffer[position] = (byte) (value >>> 24);
-    buffer[position + 1] = (byte) (value >>> 16);
-    buffer[position + 2] = (byte) (value >>> 8);
+    buffer[position] = (byte) (value >> 24);
+    buffer[position + 1] = (byte) (value >> 16);
+    buffer[position + 2] = (byte) (value >> 8);
     buffer[position + 3] = (byte) value;
     position += 4;
   }
 
   public void writeDouble(double value) {
     long longBits = Double.doubleToLongBits(value);
-    writeInt((int) (longBits >>> 32));
+    writeInt((int) (longBits >> 32));
     writeInt((int) longBits);
     position += 8;
   }

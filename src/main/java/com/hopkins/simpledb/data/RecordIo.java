@@ -36,6 +36,7 @@ public class RecordIo {
         break;
       case BLOB:
         writer.writeFixedLengthBlob((byte[]) value, column.getLength());
+        break;
       default:
         throw new IllegalArgumentException("Unknown column type: " + column.getType());
     }
