@@ -4,14 +4,17 @@ import com.hopkins.simpledb.app.CacheManager;
 import com.hopkins.simpledb.app.Config;
 import com.hopkins.simpledb.app.DiskFileManager;
 import com.hopkins.simpledb.app.Page;
+import sun.rmi.runtime.Log;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Logger;
 
 public class CacheManagerImpl implements CacheManager {
+  private static final Logger logger = Logger.getLogger("CacheManager");
 
   private final Config config;
   private final DiskFileManager diskFileManager;
@@ -32,6 +35,9 @@ public class CacheManagerImpl implements CacheManager {
 
   @Override
   public Page getPage(int pageNumber) {
+    if (logger.isLoggable(Log.VERBOSE)) {
+      logger.log(Log.VERBOSE, "getPage(" + pageNumber + ")");
+    }
     Page page = getPageInternal(pageNumber);
     page.setRecentlyUsed(true);
     page.pin();
@@ -44,29 +50,27 @@ public class CacheManagerImpl implements CacheManager {
       return pageLookup.get(pageNumber);
     }
 
-    // The cache has un-initialized pages, initialize a new one
-    if (pageList.size() < maxPages) {
-      // allocate a new page cache page
-      byte[] pageBuffer = new byte[config.getPageSize()];
-      Page page = new Page(pageBuffer);
-      pageList.add(page);
-
-      readPage(page, pageNumber);
-      pageLookup.put(pageNumber, page);
-
-      return page;
-    }
-
     // Find an evictable page
     Page page = findEvictablePage();
-    pageLookup.remove(page.getPageNumber());
+    evictPage(page);
 
     readPage(page, pageNumber);
     pageLookup.put(pageNumber, page);
     return page;
   }
 
+  private void evictPage(Page page) {
+    if (page.isDirty()) {
+      writePage(page);
+    }
+    pageLookup.remove(page.getPageNumber());
+  }
+
   private void readPage(Page page, int pageNumber) {
+    if (logger.isLoggable(Log.VERBOSE)) {
+      logger.log(Log.VERBOSE, "readPage(" + pageNumber + ")");
+    }
+
     page.setPageNumber(pageNumber);
     try {
       diskFileManager.readPage(pageNumber, page.getBuffer());
@@ -75,13 +79,35 @@ public class CacheManagerImpl implements CacheManager {
     }
   }
 
+  private void writePage(Page page) {
+    if (logger.isLoggable(Log.VERBOSE)) {
+      logger.log(Log.VERBOSE, "writePage(" + page.getPageNumber() + ")");
+    }
+    try {
+      diskFileManager.writePage(page.getPageNumber(), page.getBuffer());
+      page.setIsDirty(false);
+    } catch (IOException ex) {
+      throw new RuntimeException("Error writing page", ex);
+    }
+  }
+
   private Page findEvictablePage() {
     int numPages = pageList.size();
+
+    // The cache has un-initialized pages, initialize a new one
+    if (pageList.size() < maxPages) {
+      // allocate a new page cache page
+      byte[] pageBuffer = new byte[config.getPageSize()];
+      Page page = new Page(pageBuffer);
+      pageList.add(page);
+      return page;
+    }
+
     // Look for a non-dirty, un-pinned page
     for (int i = 0; i < numPages * 2; i++) {
       int position = (index + i) % numPages;
       Page page = pageList.get(position);
-      if (page.getPinCount() > 0 || page.isDirty()) {
+      if (page.getPinCount() > 0) {
         continue;
       }
       if (page.isRecentlyUsed()) {
@@ -92,5 +118,39 @@ public class CacheManagerImpl implements CacheManager {
       }
     }
     throw new CacheFullException("No un-pinned pages found");
+  }
+
+  @Override
+  public Page getNewPage() {
+    if (logger.isLoggable(Log.VERBOSE)) {
+      logger.log(Log.VERBOSE, "getNewPage()");
+    }
+    // Find an evictable page
+    Page page = findEvictablePage();
+    evictPage(page);
+
+    // Reset the page to empty
+    resetPage(page);
+
+    // Write the page to disk
+    int pageNumber = diskFileManager.getPageCount();
+
+    page.setPageNumber(pageNumber);
+    page.setRecentlyUsed(true);
+    page.pin();
+    writePage(page);
+
+    pageLookup.put(pageNumber, page);
+    return page;
+  }
+
+  private void resetPage(Page page) {
+    if (logger.isLoggable(Log.VERBOSE)) {
+      logger.log(Log.VERBOSE, "resetPage(" + page.getPageNumber() + ")");
+    }
+    byte[] buffer = page.getBuffer();
+    for (int i = 0; i < config.getPageSize(); i++) {
+      buffer[i] = 0;
+    }
   }
 }

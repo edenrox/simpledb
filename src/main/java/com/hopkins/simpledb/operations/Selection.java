@@ -58,12 +58,13 @@ public class Selection implements DbIterator {
 
   @Override
   public void reset() {
-    source.reset();
-    nextRecord = null;
+    close();
+    open();
   }
 
   @Override
   public void close() {
     source.close();
+    nextRecord = null;
   }
 }

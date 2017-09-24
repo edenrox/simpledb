@@ -9,7 +9,7 @@ public class CatalogTable {
   public static final int DATA_LENGTH = 300;
 
   public interface Columns {
-    String ROW_ID = "_id";
+    String ROW_ID = Column.ROW_ID_NAME;
     String TYPE = "type";
     String NAME = "name";
     String ROOT_PAGE = "root_page";
@@ -19,7 +19,7 @@ public class CatalogTable {
 
   private static final Schema schema =
       new Schema(Arrays.asList(
-          Column.newIntColumn(Columns.ROW_ID),
+          Column.ROW_ID,
           Column.newStringColumn(Columns.TYPE, 5),
           Column.newStringColumn(Columns.NAME, 60),
           Column.newIntColumn(Columns.ROOT_PAGE),

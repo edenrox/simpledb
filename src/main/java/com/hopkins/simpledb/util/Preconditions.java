@@ -11,9 +11,21 @@ public class Preconditions {
     }
   }
 
+  public static void checkNotEmpty(String arg) {
+    if (arg == null || arg.length() == 0) {
+      throw new NullPointerException();
+    }
+  }
+
   public static void checkArgument(boolean toCheck) {
     if (!toCheck) {
       throw new IllegalArgumentException();
+    }
+  }
+
+  public static void checkArgument(boolean toCheck, String message) {
+    if (!toCheck) {
+      throw new IllegalArgumentException(message);
     }
   }
 

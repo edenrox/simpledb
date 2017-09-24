@@ -49,7 +49,7 @@ public final class DiskFileManagerImpl implements DiskFileManager {
   @Override
   public void readPage(int pageNumber, byte[] buffer) throws IOException {
     if (pageNumber < 0 || pageNumber >= pageCount) {
-      throw new IndexOutOfBoundsException();
+      throw new IndexOutOfBoundsException("pageNumber: " + pageNumber + " pageCount: " + pageCount);
     }
     long position = config.getPageSize() * pageNumber;
     ByteBuffer byteBuffer = ByteBuffer.wrap(buffer);

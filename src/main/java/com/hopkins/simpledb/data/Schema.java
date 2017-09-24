@@ -107,6 +107,10 @@ public class Schema {
           .append(column.getType())
           .append(", ");
     });
+    if (!columnList.isEmpty()) {
+      // Remove the last ", "
+      builder.setLength(builder.length() - 2);
+    }
     builder.append("],");
     builder.append(" length: ").append(length);
     builder.append("}");

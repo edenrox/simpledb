@@ -1,6 +1,7 @@
 package com.hopkins.simpledb.data;
 
 import com.hopkins.simpledb.util.Preconditions;
+import com.sun.javaws.exceptions.InvalidArgumentException;
 
 import java.util.Arrays;
 import java.util.List;
@@ -35,6 +36,7 @@ public class Record {
 
   public Object get(String columnName) {
     int index = schema.indexOf(columnName);
+    Preconditions.checkArgument(index >= 0, "Unknown column: " + columnName);
     return get(index);
   }
 
@@ -54,6 +56,13 @@ public class Record {
     set(index, value);
   }
 
+  public void setAll(Object... values) {
+    Preconditions.checkArgument(values.length == schema.getColumnCount());
+    for (int i = 0; i < values.length; i++) {
+      set(i, values[i]);
+    }
+  }
+
   private void checkValueMatchesColumnType(Column column, Object value) {
     switch (column.getType()) {
       case INTEGER:
@@ -67,6 +76,9 @@ public class Record {
         break;
       case STRING:
         Preconditions.checkArgument(value instanceof String);
+        break;
+      case BLOB:
+        Preconditions.checkArgument(value instanceof byte[]);
         break;
       default:
         throw new IllegalArgumentException("Unexpected type for column: " + column);

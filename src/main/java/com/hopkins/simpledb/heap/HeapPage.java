@@ -11,8 +11,8 @@ public final class HeapPage {
   // ================
   // ~~~~ Data offset ~~~~
   // byte pageType - the type
-  // [int freePage] - [ROOT PAGE ONLY] the start of the free page list (-1 if empty)
-  // [int nextRowId] - the next row Id for this table
+  // [int freePage] - [CATALOG ROOT PAGE ONLY] the start of the free page list (-1 if empty)
+  // [int nextRowId] - [TABLE ROOT PAGE ONLY] the next row Id for this table
   // int nextPage - the page number of the next page in the heap (-1 if no further pages)
   // int numRecords - the number of records on this page
   // Record record1

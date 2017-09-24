@@ -1,10 +1,8 @@
 package com.hopkins.simpledb.catalog;
 
-import com.hopkins.simpledb.app.CatalogManager;
-import com.hopkins.simpledb.app.Config;
-import com.hopkins.simpledb.app.FreePageManager;
-import com.hopkins.simpledb.app.HeapManager;
+import com.hopkins.simpledb.app.*;
 import com.hopkins.simpledb.data.*;
+import com.hopkins.simpledb.heap.HeapPage;
 import com.hopkins.simpledb.operations.DbIterator;
 import com.hopkins.simpledb.operations.Projection;
 import com.hopkins.simpledb.operations.Selection;
@@ -18,12 +16,14 @@ public class CatalogManagerImpl implements CatalogManager {
   private final Config config;
   private final FreePageManager freePageManager;
   private final HeapManager heapManager;
+  private final CacheManager cacheManager;
   private final TableDescriptor catalogTableDescriptor;
 
-  public CatalogManagerImpl(Config config, FreePageManager freePageManager, HeapManager heapManager) {
+  public CatalogManagerImpl(Config config, FreePageManager freePageManager, HeapManager heapManager, CacheManager cacheManager) {
     this.config = config;
     this.freePageManager = freePageManager;
     this.heapManager = heapManager;
+    this.cacheManager = cacheManager;
     this.catalogTableDescriptor =
         new TableDescriptor(
             config.getCatalogTableName(), CatalogTable.getRootPageNumber(), CatalogTable.getSchema());
@@ -70,7 +70,11 @@ public class CatalogManagerImpl implements CatalogManager {
 
     // allocate a root page
     int rootPageNumber = freePageManager.allocPage();
+    Page tableRootPage = cacheManager.getPage(rootPageNumber);
+    HeapPage.initializePage(tableRootPage, true);
+    tableRootPage.unpin();
 
+    // Create a record for this table in the catalog table
     Record record = new Record(CatalogTable.getSchema());
     record.set(CatalogTable.Columns.TYPE, CatalogType.TABLE.name());
     record.set(CatalogTable.Columns.NAME, name);
@@ -81,9 +85,8 @@ public class CatalogManagerImpl implements CatalogManager {
     record.set(CatalogTable.Columns.DATA, schemaBytes);
 
 
-    // INSERT INTO simpledb_master (type, name, table_name, root_page, schema);
+    // INSERT INTO simpledb_master (type, name, root_page, data);
     heapManager.insert(catalogTableDescriptor, record);
-
   }
 
   @Override

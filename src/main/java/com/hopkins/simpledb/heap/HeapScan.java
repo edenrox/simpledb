@@ -25,6 +25,7 @@ final class HeapScan implements DbIterator {
     Page rootPage = cacheManager.getPage(table.getRootPageNumber());
     heapPage = new HeapPage(rootPage, table);
     index = -1;
+    moveToNext();
   }
 
   private void moveToNext() {
@@ -34,7 +35,7 @@ final class HeapScan implements DbIterator {
     }
     int nextPageNumber = heapPage.getNextPageNumber();
     heapPage.unpin();
-    if (nextPageNumber == 0) {
+    if (nextPageNumber == -1) {
       heapPage = null;
     } else {
       Page nextPage = cacheManager.getPage(nextPageNumber);
@@ -70,7 +71,9 @@ final class HeapScan implements DbIterator {
 
   @Override
   public void close() {
-    heapPage.unpin();
+    if (heapPage != null) {
+      heapPage.unpin();
+    }
     heapPage = null;
   }
 }

@@ -32,7 +32,7 @@ public class NestedLoopJoin implements DbIterator {
     Schema outerTupleDesc = outerSource.getSchema();
     Schema innerTupleDesc = innerSource.getSchema();
     List<Column> columnList =
-        new ArrayList<>(outerTupleDesc.getLength() + innerTupleDesc.getLength());
+        new ArrayList<>(outerTupleDesc.getColumnCount() + innerTupleDesc.getColumnCount());
     columnList.addAll(outerTupleDesc.getColumnDescriptors());
     columnList.addAll(innerTupleDesc.getColumnDescriptors());
 
@@ -90,13 +90,14 @@ public class NestedLoopJoin implements DbIterator {
 
   @Override
   public void reset() {
-    outerSource.reset();
-    innerSource.reset();
+    close();
+    open();
   }
 
   @Override
   public void close() {
     outerSource.close();
     innerSource.close();
+    outerRecord = null;
   }
 }

@@ -1,8 +1,7 @@
 package com.hopkins.simpledb.data;
 
-/**
- * Created by edenrox on 5/29/2017.
- */
+import com.hopkins.simpledb.util.Preconditions;
+
 public class Column {
   public static final String ROW_ID_NAME = "_id";
   public static final Column ROW_ID = Column.newIntColumn(ROW_ID_NAME);
@@ -32,6 +31,9 @@ public class Column {
   }
 
   private Column(ColumnType type, String name, int length) {
+    Preconditions.checkNotNull(type);
+    Preconditions.checkNotEmpty(name);
+
     this.type = type;
     this.name = name;
     this.length = length;
@@ -47,5 +49,33 @@ public class Column {
 
   public int getLength() {
     return length;
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (!(obj instanceof Column)) {
+      return false;
+    }
+    Column that = (Column) obj;
+    return type == that.type
+        && name.equals(that.name)
+        && length == that.length;
+  }
+
+  @Override
+  public int hashCode() {
+    int result = type.hashCode();
+    result = 31 * result + name.hashCode();
+    result = 31 * result + length;
+    return result;
+  }
+
+  @Override
+  public String toString() {
+    return "Column {"
+        + "type: " + type
+        + ", name: " + name
+        + ", length: " + length
+        + '}';
   }
 }

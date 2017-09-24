@@ -10,7 +10,7 @@ public final class Page {
   private boolean isRecentlyUsed;
 
   public Page(byte[] buffer) {
-    this.pageNumber = pageNumber;
+    this.pageNumber = -1;
     this.buffer = buffer;
   }
 

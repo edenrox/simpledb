@@ -57,7 +57,8 @@ public class Projection implements DbIterator {
   }
 
   public void reset() {
-    source.reset();
+    close();
+    open();
   }
 
   public void close() {

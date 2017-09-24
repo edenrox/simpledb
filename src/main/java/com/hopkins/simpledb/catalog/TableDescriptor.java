@@ -10,7 +10,7 @@ public class TableDescriptor {
   private final Schema schema;
 
   public TableDescriptor(String name, int rootPageNumber, Schema schema) {
-    Preconditions.checkArgument(schema.getColumn(0) == Column.ROW_ID);
+    Preconditions.checkArgument(schema.getColumn(0).equals(Column.ROW_ID));
 
     this.name = name;
     this.rootPageNumber = rootPageNumber;
