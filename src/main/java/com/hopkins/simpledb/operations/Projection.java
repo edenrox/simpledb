@@ -59,4 +59,18 @@ public class Projection implements DbIterator {
   public void close() {
     source.close();
   }
+
+  @Override
+  public String toString() {
+    StringBuilder builder = new StringBuilder();
+    builder.append("Projection {columns: [");
+    for (int i = 0; i < schema.getColumnCount(); i++) {
+      if (i > 0) {
+        builder.append(", ");
+      }
+      builder.append(schema.getColumnName(i));
+    }
+    builder.append("]}");
+    return builder.toString();
+  }
 }
