@@ -9,15 +9,16 @@ production database, just a learning tool.
 ## Current Support
 
 * Data serialization/deserialization for:
-  * Strings, primitives, records, schemas
+  * Strings, primitives (bool, int, double), records, schemas
 * On Disk Tables + Catalog
 * Buffer Pool - CacheManager
 * Heap File - in progress
 * Nested Loops Join (JOINs in FROM clause)
 * Projection (SELECT clause)
-* Limit (LIMIT clause)
+* Limit (LIMIT + OFFSET clause)
 * Union all (UNION ALL clause)
 * Selection (WHERE clause)
+* Sort (ORDER BY clause) - internal memory
 * Reading data (FROM clause)
   * Heap Scan, Literal Scan, Record Iterator
 * Predicates
@@ -26,7 +27,7 @@ production database, just a learning tool.
 ## Todo List
 
 * B-Tree
-* Sort
+* Sort - external sort
 * Group By
 * Aggregates
 * Additional predicates
