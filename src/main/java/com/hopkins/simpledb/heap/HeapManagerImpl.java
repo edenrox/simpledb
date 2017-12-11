@@ -2,6 +2,7 @@ package com.hopkins.simpledb.heap;
 
 import com.hopkins.simpledb.app.CacheManager;
 import com.hopkins.simpledb.app.HeapManager;
+import com.hopkins.simpledb.app.Page;
 import com.hopkins.simpledb.catalog.TableDescriptor;
 import com.hopkins.simpledb.data.Column;
 import com.hopkins.simpledb.data.Record;
@@ -57,11 +58,17 @@ public class HeapManagerImpl implements HeapManager {
       }
       int nextPageNumber = heapPage.getNextPageNumber();
       if (nextPageNumber > 0) {
+        // Move to the next page in the table to look for empty space
         heapPage.unpin();
         heapPage = new HeapPage(cacheManager.getPage(nextPageNumber), table);
       } else {
-
-
+        // We've reached the last page in the table, allocate a new page
+        Page newPage = cacheManager.getNewPage();
+        HeapPage.initializePage(newPage, false);
+        HeapPage newHeapPage = new HeapPage(newPage, table);
+        heapPage.setNextPageNumber(newHeapPage.getPage().getPageNumber());
+        heapPage.unpin();
+        return newHeapPage;
       }
     }
   }

@@ -40,6 +40,7 @@ final class HeapScan implements DbIterator {
     } else {
       Page nextPage = cacheManager.getPage(nextPageNumber);
       heapPage = new HeapPage(nextPage, table);
+      index = 0;
     }
   }
 

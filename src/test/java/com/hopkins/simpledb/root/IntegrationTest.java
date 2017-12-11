@@ -1,17 +1,11 @@
 package com.hopkins.simpledb.root;
 
-import com.hopkins.simpledb.app.CatalogManager;
-import com.hopkins.simpledb.app.Config;
-import com.hopkins.simpledb.app.HeapManager;
-import com.hopkins.simpledb.app.ServiceLocator;
+import com.hopkins.simpledb.app.*;
 import com.hopkins.simpledb.catalog.TableDescriptor;
 import com.hopkins.simpledb.data.Column;
 import com.hopkins.simpledb.data.Record;
 import com.hopkins.simpledb.data.Schema;
-import com.hopkins.simpledb.operations.DbIterator;
-import com.hopkins.simpledb.operations.NestedLoopJoin;
-import com.hopkins.simpledb.operations.Projection;
-import com.hopkins.simpledb.operations.Selection;
+import com.hopkins.simpledb.operations.*;
 import com.hopkins.simpledb.predicates.EqualsLiteralPredicate;
 import com.hopkins.simpledb.predicates.EqualsPredicate;
 import com.hopkins.simpledb.predicates.Predicate;
@@ -21,7 +15,6 @@ import org.junit.Test;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -33,8 +26,8 @@ public class IntegrationTest {
   private static final Schema TEAMS_SCHEMA =
       new Schema(Arrays.asList(
           Column.ROW_ID,
-          Column.newStringColumn("name", 20),
-          Column.newStringColumn("city", 20)
+          Column.newStringColumn("name", 40),
+          Column.newStringColumn("city", 40)
       ));
 
   private static final String GAMES_TABLE_NAME = "games";
@@ -52,6 +45,7 @@ public class IntegrationTest {
   private Config config;
   private CatalogManager catalogManager;
   private HeapManager heapManager;
+  private DiskFileManager diskFileManager;
   private String fileName;
 
   @Before
@@ -60,7 +54,6 @@ public class IntegrationTest {
     System.err.println("file: " + file);
     fileName = file.getName();
 
-
     app = new App();
     app.init(fileName);
     ServiceLocator locator = app.getServiceLocator();
@@ -68,6 +61,7 @@ public class IntegrationTest {
     config = locator.get(Config.class);
     catalogManager = locator.get(CatalogManager.class);
     heapManager = locator.get(HeapManager.class);
+    diskFileManager = locator.get(DiskFileManager.class);
   }
 
   @After
@@ -132,10 +126,37 @@ public class IntegrationTest {
     DbIterator filter = new Selection(scan, predicate);
     DbIterator projection = new Projection(filter, "city");
 
-    List<Record> result = readAllRecords(projection);
+    List<Record> result = DbIteratorUtil.openReadAllClose(projection);
     assertThat(result).hasSize(1);
     assertThat(result.get(0).get(0)).isEqualTo("Toronto");
     assertThat(result.get(0).getSchema().getColumnName(0)).isEqualTo("city");
+  }
+
+  @Test
+  public void insertAndRead_multiplePages() {
+    String[] teams = new String[] {
+        "Canucks", "Flames", "Oilers", "Jets", "Maple Leafs",
+        "Canadians", "Red Wings", "Flyers", "Kings", "Rangers"};
+    String[] cities = new String[] {
+        "Vancouver",
+        "Calgary", "Edmonton", "Winnipeg", "Toronto",
+        "Montreal", "Detroit", "Philadelphia", "Los Angeles", "New York"};
+    catalogManager.createTable(TEAMS_TABLE_NAME, TEAMS_SCHEMA);
+    TableDescriptor teamsTable = catalogManager.getTable(TEAMS_TABLE_NAME);
+    Record record = new Record(TEAMS_SCHEMA);
+
+    // Insert
+    for (String team : teams) {
+      for (String city : cities) {
+        record.setAll(0, team, city);
+        heapManager.insert(teamsTable, record);
+      }
+    }
+
+    // Read and verify number of records
+    System.err.println("Page Count: " + diskFileManager.getPageCount());
+    DbIterator teamsScan = heapManager.getScan(teamsTable);
+    assertThat(DbIteratorUtil.openCountClose(teamsScan)).isEqualTo(teams.length * cities.length);
   }
 
   @Test
@@ -188,38 +209,24 @@ public class IntegrationTest {
     // WHERE away_team_id = ?
 
     DbIterator teamsScan = heapManager.getScan(teamsTable);
-    assertThat(getResultSize(teamsScan)).isEqualTo(3);
+    assertThat(DbIteratorUtil.openCountClose(teamsScan)).isEqualTo(3);
     DbIterator gamesScan = heapManager.getScan(gamesTable);
-    assertThat(getResultSize(gamesScan)).isEqualTo(6);
+    assertThat(DbIteratorUtil.openCountClose(gamesScan)).isEqualTo(6);
     DbIterator gamesProjection = new Projection(gamesScan, "home_team_id", "away_team_id", "away_team_score");
     DbIterator gamesFilter =
         new Selection(gamesProjection, new EqualsLiteralPredicate("away_team_id", flamesTeamId));
-    assertThat(getResultSize(gamesFilter)).isEqualTo(2);
+    assertThat(DbIteratorUtil.openCountClose(gamesFilter)).isEqualTo(2);
 
     DbIterator join = new NestedLoopJoin(teamsScan, gamesFilter);
-    assertThat(getResultSize(join)).isEqualTo(6);
+    assertThat(DbIteratorUtil.openCountClose(join)).isEqualTo(6);
     DbIterator joinFilter = new Selection(join, new EqualsPredicate("_id", "home_team_id"));
-    assertThat(getResultSize(joinFilter)).isEqualTo(2);
+    assertThat(DbIteratorUtil.openCountClose(joinFilter)).isEqualTo(2);
     DbIterator joinProjection = new Projection(joinFilter, "city", "away_team_score");
-    assertThat(getResultSize(joinProjection)).isEqualTo(2);
+    assertThat(DbIteratorUtil.openCountClose(joinProjection)).isEqualTo(2);
     printResult(joinProjection, "final");
-    List<Record> recordList = readAllRecords(joinProjection);
+    List<Record> recordList = DbIteratorUtil.openReadAllClose(joinProjection);
     assertThat(recordList.get(0).get("city")).isEqualTo("Toronto");
     assertThat(recordList.get(1).get("city")).isEqualTo("Montreal");
-  }
-
-  private int getResultSize(DbIterator iterator) {
-    return readAllRecords(iterator).size();
-  }
-
-  private List<Record> readAllRecords(DbIterator iterator) {
-    List<Record> recordList = new ArrayList<>();
-    iterator.open();
-    while (iterator.hasNext()) {
-      recordList.add(iterator.next());
-    }
-    iterator.close();
-    return recordList;
   }
 
   private void printResult(DbIterator iterator, String title) {
@@ -231,7 +238,7 @@ public class IntegrationTest {
     System.err.println("Schema: " + iterator.getSchema());
     iterator.close();
     System.err.println("Records: ");
-    List<Record> recordList = readAllRecords(iterator);
+    List<Record> recordList = DbIteratorUtil.openReadAllClose(iterator);
     for (Record item : recordList) {
       System.err.println(item);
     }
