@@ -1,7 +1,6 @@
 package com.hopkins.simpledb.aggregations;
 
 import com.hopkins.simpledb.data.Column;
-import org.junit.Before;
 import org.junit.Test;
 
 import static com.google.common.truth.Truth.assertThat;
