@@ -55,7 +55,7 @@ public class NestedLoopJoin implements DbIterator {
         return false;
       } else {
         outerRecord = outerSource.next();
-        innerSource.reset();
+        DbIteratorUtil.reset(innerSource);
         if (!innerSource.hasNext()) {
           // innerSource is empty
           return false;
@@ -86,12 +86,6 @@ public class NestedLoopJoin implements DbIterator {
   @Override
   public Schema getSchema() {
     return schema;
-  }
-
-  @Override
-  public void reset() {
-    close();
-    open();
   }
 
   @Override

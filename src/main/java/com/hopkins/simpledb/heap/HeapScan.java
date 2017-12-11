@@ -64,12 +64,6 @@ final class HeapScan implements DbIterator {
   }
 
   @Override
-  public void reset() {
-    close();
-    open();
-  }
-
-  @Override
   public void close() {
     if (heapPage != null) {
       heapPage.unpin();

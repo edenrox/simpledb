@@ -41,13 +41,15 @@ public class RecordIterator implements DbIterator {
   }
 
   @Override
-  public void reset() {
-    close();
-    open();
+  public void close() {
+    iterator = null;
   }
 
   @Override
-  public void close() {
-    iterator = null;
+  public String toString() {
+    return "RecordIterator {"
+        + "numColumns: " + schema.getColumnCount()
+        + ", iterable: " + iterable
+        + "}";
   }
 }

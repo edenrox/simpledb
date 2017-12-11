@@ -46,12 +46,6 @@ public class UnionAll implements DbIterator {
   }
 
   @Override
-  public void reset() {
-    first.reset();
-    second.reset();
-  }
-
-  @Override
   public void close() {
     first.close();
     second.close();

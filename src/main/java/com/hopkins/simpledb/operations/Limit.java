@@ -10,29 +10,39 @@ import java.util.NoSuchElementException;
  */
 public class Limit implements DbIterator {
   private final DbIterator source;
+  private final int offset;
   private final int limit;
 
   private int index;
 
-  public Limit(DbIterator source, int limit) {
+  public Limit(DbIterator source, int offset, int limit) {
     this.source = source;
+    this.offset = offset;
     this.limit = limit;
+  }
+
+  private void moveToFirst() {
+    while (index < offset && source.hasNext()) {
+      source.next();
+      index++;
+    }
   }
 
   @Override
   public void open() {
     source.open();
     index = 0;
+    moveToFirst();
   }
 
   @Override
   public boolean hasNext() {
-    return index < limit && source.hasNext();
+    return (index - offset) < limit && source.hasNext();
   }
 
   @Override
   public Record next() {
-    if (index >= limit) {
+    if (!hasNext()) {
       throw new NoSuchElementException();
     }
     index++;
@@ -45,13 +55,12 @@ public class Limit implements DbIterator {
   }
 
   @Override
-  public void reset() {
-    source.reset();
-    index = 0;
+  public void close() {
+    source.close();
   }
 
   @Override
-  public void close() {
-    source.close();
+  public String toString() {
+    return "Limit {offset: " + offset + ", limit: " + limit + "}";
   }
 }

@@ -18,7 +18,5 @@ public interface DbIterator {
 
   Schema getSchema();
 
-  void reset();
-
   void close();
 }

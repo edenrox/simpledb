@@ -43,11 +43,6 @@ public class LiteralScan implements DbIterator {
   }
 
   @Override
-  public void reset() {
-    hasNext = true;
-  }
-
-  @Override
   public void close() {
 
   }
