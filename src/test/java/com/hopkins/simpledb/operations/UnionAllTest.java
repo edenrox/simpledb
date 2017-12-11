@@ -26,6 +26,7 @@ public class UnionAllTest {
             .setName("scan2")
             .setColumns("name", "age")
             .addRow("Joanne", "35")
+            .addRow("Markus", "21")
             .build();
   }
 
@@ -35,7 +36,7 @@ public class UnionAllTest {
     unionAll.open();
 
     List<Object> names = DbIteratorUtil.readAllColumn(unionAll, "name");
-    assertThat(names).containsExactly("Bobby", "Joanne").inOrder();
+    assertThat(names).containsExactly("Bobby", "Joanne", "Markus").inOrder();
 
     unionAll.close();
   }
