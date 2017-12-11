@@ -23,11 +23,12 @@ production database, just a learning tool.
   * Heap Scan, Literal Scan, Record Iterator
 * Predicates
   * Equality (literal and columnar)
+* Aggregate functions
+  * COUNT, SUM, AVG, MIN, MAX, GROUP_CONCAT
 
 ## Todo List
 
 * B-Tree
 * Sort - external sort
 * Group By
-* Aggregates
 * Additional predicates
