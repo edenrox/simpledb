@@ -22,7 +22,7 @@ public class GroupBy implements DbIterator {
    * Instantiate a {@link DbIterator} which performs a GROUP BY and aggregations.  Result records
    * contain only columns in the {@code aggregationTypeMap}.  For GROUP BY columns, use the
    * {@link AggregationType#FIRST}.
-   * 
+   *
    * <p>Assumes the source iterator is ordered by the {@code groupByColumns}.
    */
   public GroupBy(DbIterator source, List<String> groupByColumns, Map<String, AggregationType> aggregationTypeMap) {
