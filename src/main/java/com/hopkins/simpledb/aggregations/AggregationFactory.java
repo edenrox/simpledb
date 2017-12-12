@@ -3,7 +3,7 @@ package com.hopkins.simpledb.aggregations;
 import com.hopkins.simpledb.data.Column;
 
 public class AggregationFactory {
-  public Aggregation getAggregation(AggregationType type, Column column, String separator) {
+  public static Aggregation getAggregation(AggregationType type, Column column, String separator) {
     switch (type) {
       case MAX:
         return new MaxAggregation(column);
