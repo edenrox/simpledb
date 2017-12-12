@@ -87,6 +87,6 @@ public class Record {
 
   @Override
   public String toString() {
-    return "Record [" + values.toString() + "]";
+    return "Record " + values.toString();
   }
 }
