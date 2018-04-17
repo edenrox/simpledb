@@ -34,4 +34,12 @@ public class Preconditions {
       throw new IllegalStateException();
     }
   }
+
+  public static void checkBounds(int index, int size) {
+    if (index < 0) {
+      throw new IndexOutOfBoundsException("Negative index: " + index);
+    } else if (index >= size) {
+      throw new IndexOutOfBoundsException("Index: " + index + " greater than size: " + size);
+    }
+  }
 }
