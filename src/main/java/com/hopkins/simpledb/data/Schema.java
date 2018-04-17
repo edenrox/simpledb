@@ -82,12 +82,11 @@ public class Schema {
 
   @Override
   public boolean equals(Object o) {
-    if (this == o) return true;
-    if (o == null || getClass() != o.getClass()) return false;
-
-    Schema schema = (Schema) o;
-
-    return columnList.equals(schema.columnList);
+    if (o instanceof Schema) {
+      Schema that = (Schema) o;
+      return columnList.equals(that.columnList);
+    }
+    return false;
   }
 
   @Override
