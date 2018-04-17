@@ -5,11 +5,22 @@ import com.sun.javaws.exceptions.InvalidArgumentException;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Created by ian_000 on 6/1/2017.
  */
 public class Record {
+
+  public static Record copyOf(Record record) {
+    Schema schema = record.getSchema();
+    Record copy = new Record(schema);
+    for (int i = 0; i < schema.getColumnCount(); i++) {
+      copy.set(i, record.get(i));
+    }
+    return copy;
+  }
+
   private final Schema schema;
   private final List<Object> values;
 
@@ -88,5 +99,20 @@ public class Record {
   @Override
   public String toString() {
     return "Record " + values.toString();
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (o instanceof Record) {
+      Record that = (Record) o;
+      return Objects.equals(schema, that.schema)
+          && Objects.equals(values, that.values);
+    }
+    return false;
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(schema, values);
   }
 }
