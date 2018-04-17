@@ -1,5 +1,6 @@
 package com.hopkins.simpledb.operations;
 
+import com.hopkins.simpledb.data.ColumnCompare;
 import com.hopkins.simpledb.data.ColumnType;
 import com.hopkins.simpledb.data.Record;
 import com.hopkins.simpledb.data.Schema;
@@ -52,21 +53,7 @@ public class Sort implements DbIterator {
     Object valA = a.get(columnIndex);
     Object valB = b.get(columnIndex);
 
-    switch (columnType) {
-      case STRING:
-        return ((String) valA).compareTo((String) valB);
-      case BOOL:
-        return ((Boolean) valA).compareTo((Boolean) valB);
-      case INTEGER:
-        return ((Integer) valA).compareTo((Integer) valB);
-      case DOUBLE:
-        return ((Double) valA).compareTo((Double) valB);
-      case BLOB:
-        // TODO(ianhopkins): implement byte array comparison
-        return 0;
-      default:
-        throw new IllegalArgumentException("Invalid columnType:" + columnType);
-    }
+    return ColumnCompare.compare(columnType, valA, valB);
   }
 
   @Override
