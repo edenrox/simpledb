@@ -2,6 +2,7 @@
 .idea
 target
 *.iml
+gen
 
 # Compiled class file
 *.class
@@ -9,7 +10,10 @@ target
 # Log file
 *.log
 
-# Package Files #
+# Package files
 *.jar
 *.war
 *.ear
+
+# App Data files
+*.db
