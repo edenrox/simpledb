@@ -102,10 +102,13 @@ type_name
 expr
  : literal_value
  | ( table_name '.' )? column_name
+ | expr ( '*' | '/' | '%' ) expr
+ | expr ( '+' | '-' ) expr
  | expr ( '<' | '<=' | '>' | '>=' ) expr
  | expr ( '=' | '==' | '!=' | '<>' ) expr
  | expr K_AND expr
  | expr K_OR expr
+ | function_name '(' expr ')'
  ;
 
 indexed_column
@@ -145,6 +148,10 @@ keyword
  | K_VALUES
  | K_VIEW
  | K_WHERE
+ ;
+
+function_name
+ : any_name
  ;
 
 table_name
@@ -213,7 +220,7 @@ STRING_LITERAL
  ;
 
 SPACES
- : [ \u000B\t\r\n] -> channel(HIDDEN)
+ : [ \u000B\t\r\n] -> skip
  ;
 
 UNEXPECTED_CHAR
