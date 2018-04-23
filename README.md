@@ -12,7 +12,7 @@ production database, just a learning tool.
   * Strings, primitives (bool, int, double), records, schemas
 * On Disk Tables + Catalog
 * Buffer Pool - CacheManager
-* Heap File - in progress
+* Heap File
 * Nested Loops Join (JOINs in FROM clause)
 * Projection (SELECT clause)
 * Limit (LIMIT + OFFSET clause)
@@ -26,6 +26,7 @@ production database, just a learning tool.
 * Group By (GROUP BY clause)
 * Aggregate functions
   * COUNT, SUM, AVG, MIN, MAX, GROUP_CONCAT
+* Basic SQL grammar
 
 ## Todo List
 
