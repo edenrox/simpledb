@@ -9,9 +9,9 @@ import com.hopkins.simpledb.catalog.TableDescriptor;
 import com.hopkins.simpledb.data.Column;
 import com.hopkins.simpledb.data.Record;
 import com.hopkins.simpledb.data.Schema;
+import com.hopkins.simpledb.expression.Expression;
 import com.hopkins.simpledb.operations.DbIterator;
 import com.hopkins.simpledb.operations.Selection;
-import com.hopkins.simpledb.predicates.Predicate;
 
 import java.util.List;
 import java.util.Map;
@@ -56,13 +56,13 @@ public class MutationManagerImpl implements MutationManager {
   }
 
   @Override
-  public int update(String tableName, Predicate predicate, Map<String, Object> values) {
+  public int update(String tableName, Expression expression, Map<String, Object> values) {
     // Find the table and indexes
     TableDescriptor table = catalogManager.getTable(tableName);
     List<IndexDescriptor> indexList = catalogManager.findIndexes(tableName);
 
     DbIterator scan = heapManager.getScan(table);
-    DbIterator filter = new Selection(scan, predicate);
+    DbIterator filter = new Selection(scan, expression);
 
     int numUpdated = 0;
     try {
@@ -104,13 +104,13 @@ public class MutationManagerImpl implements MutationManager {
   }
 
   @Override
-  public int delete(String tableName, Predicate predicate) {
+  public int delete(String tableName, Expression expression) {
     // Find the table and indexes
     TableDescriptor table = catalogManager.getTable(tableName);
     List<IndexDescriptor> indexList = catalogManager.findIndexes(tableName);
 
     DbIterator scan = heapManager.getScan(table);
-    DbIterator filter = new Selection(scan, predicate);
+    DbIterator filter = new Selection(scan, expression);
 
     int numDeleted = 0;
     try {

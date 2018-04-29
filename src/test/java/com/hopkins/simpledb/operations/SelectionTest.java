@@ -1,8 +1,12 @@
 package com.hopkins.simpledb.operations;
 
 import com.hopkins.simpledb.StringRecordIteratorBuilder;
+import com.hopkins.simpledb.data.ColumnType;
 import com.hopkins.simpledb.data.Record;
-import com.hopkins.simpledb.predicates.EqualsLiteralPredicate;
+import com.hopkins.simpledb.expression.ColumnExpression;
+import com.hopkins.simpledb.expression.ComparisonExpression;
+import com.hopkins.simpledb.expression.Expression;
+import com.hopkins.simpledb.expression.LiteralExpression;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -32,8 +36,12 @@ public class SelectionTest {
 
   @Test
   public void next_returnsOnlyMatchingRows() {
-    EqualsLiteralPredicate predicate = new EqualsLiteralPredicate("sname", "Inder");
-    Selection selection = new Selection(studentsIterator, predicate);
+    Expression expr =
+        new ComparisonExpression(
+            new ColumnExpression("sname"),
+            ComparisonExpression.ComparisonOperator.EQUAL,
+            new LiteralExpression(ColumnType.STRING, "Inder"));
+    Selection selection = new Selection(studentsIterator, expr);
     selection.open();
 
     Record record = selection.next();
@@ -49,8 +57,12 @@ public class SelectionTest {
 
   @Test
   public void hasNext_returnsTrueUntilEndOfMatchingRows() {
-    EqualsLiteralPredicate predicate = new EqualsLiteralPredicate("sname", "Inder");
-    Selection selection = new Selection(studentsIterator, predicate);
+    Expression expr =
+        new ComparisonExpression(
+            new ColumnExpression("sname"),
+            ComparisonExpression.ComparisonOperator.EQUAL,
+            new LiteralExpression(ColumnType.STRING, "Inder"));
+    Selection selection = new Selection(studentsIterator, expr);
     selection.open();
 
     assertThat(selection.hasNext()).isTrue();

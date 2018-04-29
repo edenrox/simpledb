@@ -3,12 +3,14 @@ package com.hopkins.simpledb.root;
 import com.hopkins.simpledb.app.*;
 import com.hopkins.simpledb.catalog.TableDescriptor;
 import com.hopkins.simpledb.data.Column;
+import com.hopkins.simpledb.data.ColumnType;
 import com.hopkins.simpledb.data.Record;
 import com.hopkins.simpledb.data.Schema;
+import com.hopkins.simpledb.expression.ColumnExpression;
+import com.hopkins.simpledb.expression.ComparisonExpression;
+import com.hopkins.simpledb.expression.Expression;
+import com.hopkins.simpledb.expression.LiteralExpression;
 import com.hopkins.simpledb.operations.*;
-import com.hopkins.simpledb.predicates.EqualsLiteralPredicate;
-import com.hopkins.simpledb.predicates.EqualsPredicate;
-import com.hopkins.simpledb.predicates.Predicate;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -122,8 +124,12 @@ public class IntegrationTest {
 
     // SELECT city FROM teams WHERE name = 'Maple Leafs'
     DbIterator scan = heapManager.getScan(teamsTable);
-    Predicate predicate = new EqualsLiteralPredicate("name", "Maple Leafs");
-    DbIterator filter = new Selection(scan, predicate);
+    Expression expression =
+        new ComparisonExpression(
+            new ColumnExpression("name"),
+            ComparisonExpression.ComparisonOperator.EQUAL,
+            new LiteralExpression(ColumnType.STRING, "Maple Leafs"));
+    DbIterator filter = new Selection(scan, expression);
     DbIterator projection = new Projection(filter, "city");
 
     List<Record> result = DbIteratorUtil.openReadAllClose(projection);
@@ -213,13 +219,22 @@ public class IntegrationTest {
     DbIterator gamesScan = heapManager.getScan(gamesTable);
     assertThat(DbIteratorUtil.openCountClose(gamesScan)).isEqualTo(6);
     DbIterator gamesProjection = new Projection(gamesScan, "home_team_id", "away_team_id", "away_team_score");
-    DbIterator gamesFilter =
-        new Selection(gamesProjection, new EqualsLiteralPredicate("away_team_id", flamesTeamId));
+    Expression gamesExpression =
+        new ComparisonExpression(
+            new ColumnExpression("away_team_id"),
+            ComparisonExpression.ComparisonOperator.EQUAL,
+            new LiteralExpression(ColumnType.INTEGER, flamesTeamId));
+    DbIterator gamesFilter = new Selection(gamesProjection, gamesExpression);
     assertThat(DbIteratorUtil.openCountClose(gamesFilter)).isEqualTo(2);
 
     DbIterator join = new NestedLoopJoin(teamsScan, gamesFilter);
     assertThat(DbIteratorUtil.openCountClose(join)).isEqualTo(6);
-    DbIterator joinFilter = new Selection(join, new EqualsPredicate("_id", "home_team_id"));
+    Expression joinExpression =
+        new ComparisonExpression(
+            new ColumnExpression("_id"),
+            ComparisonExpression.ComparisonOperator.EQUAL,
+            new ColumnExpression("home_team_id"));
+    DbIterator joinFilter = new Selection(join, joinExpression);
     assertThat(DbIteratorUtil.openCountClose(joinFilter)).isEqualTo(2);
     DbIterator joinProjection = new Projection(joinFilter, "city", "away_team_score");
     assertThat(DbIteratorUtil.openCountClose(joinProjection)).isEqualTo(2);
@@ -249,8 +264,12 @@ public class IntegrationTest {
 
     // SELECT _id FROM teams WHERE name = ?
     DbIterator scan = heapManager.getScan(teamsTable);
-    Predicate predicate = new EqualsLiteralPredicate("name", teamName);
-    DbIterator filter = new Selection(scan, predicate);
+    Expression expression =
+        new ComparisonExpression(
+            new ColumnExpression("name"),
+            ComparisonExpression.ComparisonOperator.EQUAL,
+            new LiteralExpression(ColumnType.STRING, teamName));
+    DbIterator filter = new Selection(scan, expression);
     DbIterator projection = new Projection(filter, Column.ROW_ID_NAME);
 
     int rowId = -1;

@@ -1,8 +1,10 @@
 package com.hopkins.simpledb.operations;
 
+import com.hopkins.simpledb.data.ColumnType;
 import com.hopkins.simpledb.data.Record;
 import com.hopkins.simpledb.data.Schema;
-import com.hopkins.simpledb.predicates.Predicate;
+import com.hopkins.simpledb.expression.Expression;
+import com.hopkins.simpledb.util.Preconditions;
 
 import java.util.NoSuchElementException;
 
@@ -10,26 +12,29 @@ import java.util.NoSuchElementException;
  * Created by ian_000 on 7/2/2017.
  */
 public class Selection implements DbIterator {
-  private final Predicate predicate;
+  private final Expression expression;
   private final DbIterator source;
 
   private Record nextRecord;
 
-  public Selection(DbIterator source, Predicate predicate) {
+  public Selection(DbIterator source, Expression expression) {
+    Preconditions.checkNotNull(source);
     this.source = source;
-    this.predicate = predicate;
+    this.expression = expression;
   }
 
   @Override
   public void open() {
     source.open();
+    Preconditions.checkState(expression.getType(source.getSchema()) == ColumnType.BOOL);
     nextRecord = findNextRecord();
   }
 
   private Record findNextRecord() {
     while (source.hasNext()) {
       Record record = source.next();
-      if (predicate.matches(record)) {
+      boolean result = (Boolean) expression.getValue(record);
+      if (result) {
         return record;
       }
     }
