@@ -4,11 +4,15 @@ import com.hopkins.simpledb.data.ColumnType;
 import com.hopkins.simpledb.data.Record;
 import com.hopkins.simpledb.data.Schema;
 
+/** Represents an expression. */
 public interface Expression {
 
-    String getName();
+  /** Returns the column name of the expression. */
+  String getName();
 
-    ColumnType getType(Schema schema);
+  /** Returns the {@link ColumnType} of the expression. */
+  ColumnType getType(Schema schema);
 
-    Object getValue(Record record);
+  /** Evaluate and return the value of the expression. */
+  Object getValue(Record record);
 }
