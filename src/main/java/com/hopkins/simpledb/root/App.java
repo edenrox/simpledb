@@ -1,6 +1,7 @@
 package com.hopkins.simpledb.root;
 
 import com.hopkins.simpledb.app.*;
+import com.hopkins.simpledb.btree.BTreeManagerImpl;
 import com.hopkins.simpledb.cache.CacheManagerImpl;
 import com.hopkins.simpledb.catalog.CatalogManagerImpl;
 import com.hopkins.simpledb.config.ConfigImpl;
@@ -9,6 +10,7 @@ import com.hopkins.simpledb.disk.DiskFileManagerImpl;
 import com.hopkins.simpledb.freepages.FreePageManagerImpl;
 import com.hopkins.simpledb.heap.HeapInitializer;
 import com.hopkins.simpledb.heap.HeapManagerImpl;
+import com.hopkins.simpledb.mutations.MutationManagerImpl;
 
 import java.io.IOException;
 
@@ -34,11 +36,13 @@ public class App {
   }
 
   public void init(String fileName) throws IOException {
+    MutationManagerImpl mutationManager = new MutationManagerImpl();
     locator
         .bind(Config.class, new ConfigImpl())
         .bind(
             DiskFileManager.class,
             new DiskFileManagerImpl(locator.get(Config.class)))
+        .bind(MutationManager.class, mutationManager)
         .bind(
             CacheManager.class,
             new CacheManagerImpl(locator.get(Config.class), locator.get(DiskFileManager.class)))
@@ -54,9 +58,13 @@ public class App {
                 locator.get(Config.class),
                 locator.get(FreePageManager.class),
                 locator.get(HeapManager.class),
-                locator.get(CacheManager.class)))
+                locator.get(CacheManager.class),
+                locator.get(MutationManager.class)))
+        .bind(BTreeManager.class, new BTreeManagerImpl(locator.get(HeapManager.class), locator.get(CacheManager.class)))
         .bind(RecordIo.class, new RecordIo())
     ;
+
+    mutationManager.init(locator.get(CatalogManager.class), locator.get(HeapManager.class), locator.get(BTreeManager.class));
 
     DiskFileManager diskFileManager = locator.get(DiskFileManager.class);
     diskFileManager.init(fileName);
