@@ -4,13 +4,13 @@ import com.hopkins.simpledb.app.CacheManager;
 import com.hopkins.simpledb.app.Config;
 import com.hopkins.simpledb.app.DiskFileManager;
 import com.hopkins.simpledb.app.Page;
-import sun.rmi.runtime.Log;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class CacheManagerImpl implements CacheManager {
@@ -35,8 +35,8 @@ public class CacheManagerImpl implements CacheManager {
 
   @Override
   public Page getPage(int pageNumber) {
-    if (logger.isLoggable(Log.VERBOSE)) {
-      logger.log(Log.VERBOSE, "getPage(" + pageNumber + ")");
+    if (logger.isLoggable(Level.FINER)) {
+      logger.log(Level.FINER, "getPage(" + pageNumber + ")");
     }
     Page page = getPageInternal(pageNumber);
     page.setRecentlyUsed(true);
@@ -67,8 +67,8 @@ public class CacheManagerImpl implements CacheManager {
   }
 
   private void readPage(Page page, int pageNumber) {
-    if (logger.isLoggable(Log.VERBOSE)) {
-      logger.log(Log.VERBOSE, "readPage(" + pageNumber + ")");
+    if (logger.isLoggable(Level.FINER)) {
+      logger.log(Level.FINER, "readPage(" + pageNumber + ")");
     }
 
     page.setPageNumber(pageNumber);
@@ -80,8 +80,8 @@ public class CacheManagerImpl implements CacheManager {
   }
 
   private void writePage(Page page) {
-    if (logger.isLoggable(Log.VERBOSE)) {
-      logger.log(Log.VERBOSE, "writePage(" + page.getPageNumber() + ")");
+    if (logger.isLoggable(Level.FINER)) {
+      logger.log(Level.FINER, "writePage(" + page.getPageNumber() + ")");
     }
     try {
       diskFileManager.writePage(page.getPageNumber(), page.getBuffer());
@@ -122,8 +122,8 @@ public class CacheManagerImpl implements CacheManager {
 
   @Override
   public Page getNewPage() {
-    if (logger.isLoggable(Log.VERBOSE)) {
-      logger.log(Log.VERBOSE, "getNewPage()");
+    if (logger.isLoggable(Level.FINER)) {
+      logger.log(Level.FINER, "getNewPage()");
     }
     // Find an evictable page
     Page page = findEvictablePage();
@@ -145,8 +145,8 @@ public class CacheManagerImpl implements CacheManager {
   }
 
   private void resetPage(Page page) {
-    if (logger.isLoggable(Log.VERBOSE)) {
-      logger.log(Log.VERBOSE, "resetPage(" + page.getPageNumber() + ")");
+    if (logger.isLoggable(Level.FINER)) {
+      logger.log(Level.FINER, "resetPage(" + page.getPageNumber() + ")");
     }
     byte[] buffer = page.getBuffer();
     for (int i = 0; i < config.getPageSize(); i++) {
