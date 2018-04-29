@@ -21,8 +21,14 @@ production database, just a learning tool.
 * Sort (ORDER BY clause) - internal memory
 * Reading data (FROM clause)
   * Heap Scan, Literal Scan, Record Iterator
-* Predicates
-  * Equality (literal and columnar)
+* Expressions
+  * Literals
+  * Columns
+  * Arithmetic (+,-,*,/,%)
+  * Comparison
+  * Boolean (AND/OR)
+* B-Tree indexes - in progress
+  * Index scan, index lookup
 * Group By (GROUP BY clause)
 * Aggregate functions
   * COUNT, SUM, AVG, MIN, MAX, GROUP_CONCAT
@@ -30,6 +36,5 @@ production database, just a learning tool.
 
 ## Todo List
 
-* B-Tree indexes
 * Sort - external sort
-* Additional predicates
+* SQL parsing to query plan
