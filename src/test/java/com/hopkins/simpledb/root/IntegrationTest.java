@@ -1,15 +1,15 @@
 package com.hopkins.simpledb.root;
 
+import static com.hopkins.simpledb.operations.DbIteratorUtil.openReadAllColumnClose;
+import static com.hopkins.simpledb.root.HockeyData.*;
+
+import com.hopkins.simpledb.RecordUtil;
 import com.hopkins.simpledb.app.*;
 import com.hopkins.simpledb.catalog.TableDescriptor;
 import com.hopkins.simpledb.data.Column;
 import com.hopkins.simpledb.data.ColumnType;
 import com.hopkins.simpledb.data.Record;
-import com.hopkins.simpledb.data.Schema;
-import com.hopkins.simpledb.expression.ColumnExpression;
-import com.hopkins.simpledb.expression.ComparisonExpression;
-import com.hopkins.simpledb.expression.Expression;
-import com.hopkins.simpledb.expression.LiteralExpression;
+import com.hopkins.simpledb.expression.*;
 import com.hopkins.simpledb.operations.*;
 import org.junit.After;
 import org.junit.Before;
@@ -18,30 +18,12 @@ import org.junit.Test;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import static com.google.common.truth.Truth.assertThat;
 
 public class IntegrationTest {
-
-  private static final String TEAMS_TABLE_NAME = "teams";
-  private static final Schema TEAMS_SCHEMA =
-      new Schema(Arrays.asList(
-          Column.ROW_ID,
-          Column.newStringColumn("name", 40),
-          Column.newStringColumn("city", 40)
-      ));
-
-  private static final String GAMES_TABLE_NAME = "games";
-  private static final Schema GAMES_SCHEMA =
-      new Schema(Arrays.asList(
-          Column.ROW_ID,
-          Column.newStringColumn("date", 20),
-          Column.newIntColumn("home_team_id"),
-          Column.newIntColumn("home_team_score"),
-          Column.newIntColumn("away_team_id"),
-          Column.newIntColumn("away_team_score")
-      ));
 
   private App app;
   private Config config;
@@ -72,213 +54,289 @@ public class IntegrationTest {
     file.delete();
   }
 
+  private void createHockeyTables() {
+    catalogManager.createTable(DivisionsTable.TABLE_NAME, DivisionsTable.SCHEMA);
+    catalogManager.createTable(TeamsTable.TABLE_NAME, TeamsTable.SCHEMA);
+    catalogManager.createTable(GamesTable.TABLE_NAME, GamesTable.SCHEMA);
+  }
+
+  private void fillHockeyData() {
+    // INSERT INTO divisions
+    TableDescriptor divisionsTable = catalogManager.getTable(DivisionsTable.TABLE_NAME);
+    Record record = new Record(divisionsTable.getSchema());
+    for (Object[] row : DIVISIONS_DATA) {
+      record.setAll(row);
+      heapManager.insert(divisionsTable, record);
+    }
+
+    // INSERT INTO teams
+    TableDescriptor teamsTable = catalogManager.getTable(TeamsTable.TABLE_NAME);
+    record = new Record(teamsTable.getSchema());
+    for (Object[] row : TEAMS_DATA) {
+      record.setAll(row);
+      heapManager.insert(teamsTable, record);
+    }
+
+    // INSERT INTO games
+    TableDescriptor gamesTable = catalogManager.getTable(GamesTable.TABLE_NAME);
+    record = new Record(gamesTable.getSchema());
+    for (Object[] sourceRow : GAMES_DATA) {
+      Object[] row = Arrays.copyOf(sourceRow, sourceRow.length);
+
+      // Transform team names into team_ids
+      String homeTeam = (String) row[2];
+      String awayTeam = (String) row[4];
+      int homeTeamId = findTeamId(homeTeam);
+      int awayTeamId = findTeamId(awayTeam);
+      row[2] = homeTeamId;
+      row[4] = awayTeamId;
+      record.setAll(row);
+      heapManager.insert(gamesTable, record);
+    }
+  }
+
+  private int findTeamId(String name) {
+    if (name.startsWith("New York")) {
+      String city = "New York";
+      String team = name.substring("New York ".length());
+      return findTeamIdByCityAndTeam(city, team);
+    } else {
+      return findTeamIdByCity(name);
+    }
+  }
+
+  private int findTeamIdByCity(String cityName) {
+    TableDescriptor teamsTable = catalogManager.getTable(TeamsTable.TABLE_NAME);
+    DbIterator scan = heapManager.getScan(teamsTable);
+    Expression expression =
+        new ComparisonExpression(
+            new ColumnExpression(TeamsTable.Columns.CITY),
+            ComparisonExpression.ComparisonOperator.EQUAL,
+            new LiteralExpression(ColumnType.STRING, cityName));
+    DbIterator filter = new Selection(scan, expression);
+    DbIterator projection = new Projection(filter, TeamsTable.Columns.ID);
+
+    List<Object> ids = DbIteratorUtil.openReadAllColumnClose(projection, TeamsTable.Columns.ID);
+    assertThat(ids).hasSize(1);
+    return (Integer) ids.get(0);
+  }
+
+  private int findTeamIdByCityAndTeam(String cityName, String teamName) {
+    TableDescriptor teamsTable = catalogManager.getTable(TeamsTable.TABLE_NAME);
+    DbIterator scan = heapManager.getScan(teamsTable);
+    Expression expression =
+        new BooleanExpression(
+            new ComparisonExpression(
+                new ColumnExpression(TeamsTable.Columns.CITY),
+                ComparisonExpression.ComparisonOperator.EQUAL,
+                new LiteralExpression(ColumnType.STRING, cityName)),
+            BooleanExpression.BooleanOperator.AND,
+            new ComparisonExpression(
+                new ColumnExpression(TeamsTable.Columns.NAME),
+                ComparisonExpression.ComparisonOperator.EQUAL,
+                new LiteralExpression(ColumnType.STRING, teamName)));
+    DbIterator filter = new Selection(scan, expression);
+    DbIterator projection = new Projection(filter, TeamsTable.Columns.ID);
+
+    List<Object> ids = DbIteratorUtil.openReadAllColumnClose(projection, TeamsTable.Columns.ID);
+    assertThat(ids).hasSize(1);
+    return (Integer) ids.get(0);
+  }
+
   @Test
-  public void createTables() {
-    // is there a catalog table?
+  public void hasCatalogTable() {
     assertThat(catalogManager.hasTable(config.getCatalogTableName())).isTrue();
-
-    assertThat(catalogManager.hasTable(TEAMS_TABLE_NAME)).isFalse();
-    assertThat(catalogManager.hasTable(GAMES_TABLE_NAME)).isFalse();
-
-    // CREATE TABLE teams (_id INTEGER PRIMARY KEY, name VARCHAR(20), city VARCHAR(20));
-    catalogManager.createTable(TEAMS_TABLE_NAME, TEAMS_SCHEMA);
-
-    assertThat(catalogManager.hasTable(TEAMS_TABLE_NAME)).isTrue();
-    assertThat(catalogManager.hasTable(GAMES_TABLE_NAME)).isFalse();
-
-    // CREATE TABLE games
-    catalogManager.createTable(GAMES_TABLE_NAME, GAMES_SCHEMA);
-
-    assertThat(catalogManager.hasTable(TEAMS_TABLE_NAME)).isTrue();
-    assertThat(catalogManager.hasTable(GAMES_TABLE_NAME)).isTrue();
-    assertThat(catalogManager.hasTable("bogus")).isFalse();
   }
 
   @Test
-  public void insertAndReadData() {
-    // CREATE TABLE teams (_id INTEGER PRIMARY KEY, name VARCHAR(20), city VARCHAR(20));
-    catalogManager.createTable(TEAMS_TABLE_NAME, TEAMS_SCHEMA);
+  public void createTeamsTable() {
+    // Initially no teams table
+    assertThat(catalogManager.hasTable(TeamsTable.TABLE_NAME)).isFalse();
 
-    TableDescriptor teamsTable = catalogManager.getTable(TEAMS_TABLE_NAME);
+    // CREATE TABLE teams
+    catalogManager.createTable(TeamsTable.TABLE_NAME, TeamsTable.SCHEMA);
 
-    // INSERT INTO teams (name, city) VALUES
-    // ('Maple Leafs', 'Toronto'),
-    // ('Canadians', 'Montreal'),
-    // ('Flames', 'Calgary'),
-    // ('Oilers', 'Edmonton'),
-    // ('Jets', 'Winnipeg'),
-    // ('Canucks', 'Vancouver');
-    Record record = new Record(TEAMS_SCHEMA);
-    record.setAll(0, "Maple Leafs", "Toronto");
-    heapManager.insert(teamsTable, record);
-    record.setAll(0, "Canadians", "Montreal");
-    heapManager.insert(teamsTable, record);
-    record.setAll(0, "Flames", "Calgary");
-    heapManager.insert(teamsTable, record);
-    record.setAll(0, "Oilers", "Edmonton");
-    heapManager.insert(teamsTable, record);
-    record.setAll(0, "Jets", "Winnipeg");
-    heapManager.insert(teamsTable, record);
-    record.setAll(0, "Canucks", "Vancouver");
-    heapManager.insert(teamsTable, record);
-
-    // SELECT city FROM teams WHERE name = 'Maple Leafs'
-    DbIterator scan = heapManager.getScan(teamsTable);
-    Expression expression =
-        new ComparisonExpression(
-            new ColumnExpression("name"),
-            ComparisonExpression.ComparisonOperator.EQUAL,
-            new LiteralExpression(ColumnType.STRING, "Maple Leafs"));
-    DbIterator filter = new Selection(scan, expression);
-    DbIterator projection = new Projection(filter, "city");
-
-    List<Record> result = DbIteratorUtil.openReadAllClose(projection);
-    assertThat(result).hasSize(1);
-    assertThat(result.get(0).get(0)).isEqualTo("Toronto");
-    assertThat(result.get(0).getSchema().getColumnName(0)).isEqualTo("city");
+    assertThat(catalogManager.hasTable(TeamsTable.TABLE_NAME)).isTrue();
   }
 
   @Test
-  public void insertAndRead_multiplePages() {
-    String[] teams = new String[] {
-        "Canucks", "Flames", "Oilers", "Jets", "Maple Leafs",
-        "Canadians", "Red Wings", "Flyers", "Kings", "Rangers"};
-    String[] cities = new String[] {
-        "Vancouver",
-        "Calgary", "Edmonton", "Winnipeg", "Toronto",
-        "Montreal", "Detroit", "Philadelphia", "Los Angeles", "New York"};
-    catalogManager.createTable(TEAMS_TABLE_NAME, TEAMS_SCHEMA);
-    TableDescriptor teamsTable = catalogManager.getTable(TEAMS_TABLE_NAME);
-    Record record = new Record(TEAMS_SCHEMA);
+  public void selectDivisionNames() {
+    createHockeyTables();
+    fillHockeyData();
 
-    // Insert
-    for (String team : teams) {
-      for (String city : cities) {
-        record.setAll(0, team, city);
-        heapManager.insert(teamsTable, record);
-      }
-    }
+    // SELECT name FROM divisions
+    TableDescriptor divisionsTable = catalogManager.getTable(DivisionsTable.TABLE_NAME);
+    DbIterator divisionsIterator = new Projection(heapManager.getScan(divisionsTable), DivisionsTable.Columns.NAME);
+    List<Object> items = DbIteratorUtil.openReadAllColumnClose(divisionsIterator, DivisionsTable.Columns.NAME);
+    assertThat(items).containsExactly("Atlantic", "Metropolitan", "Central", "Pacific");
+  }
 
-    // Read and verify number of records
-    System.err.println("Page Count: " + diskFileManager.getPageCount());
+  @Test
+  public void selectNumTeams() {
+    createHockeyTables();
+    fillHockeyData();
+
+    // SELECT * FROM teams -> num rows
+    TableDescriptor teamsTable = catalogManager.getTable(TeamsTable.TABLE_NAME);
     DbIterator teamsScan = heapManager.getScan(teamsTable);
-    assertThat(DbIteratorUtil.openCountClose(teamsScan)).isEqualTo(teams.length * cities.length);
+    int teamsCount = DbIteratorUtil.openCountClose(teamsScan);
+    assertThat(teamsCount).isEqualTo(31);
   }
 
   @Test
-  public void testMultiTableJoin() {
-    // CREATE TABLE teams (_id INTEGER PRIMARY KEY, name VARCHAR(20), city VARCHAR(20));
-    catalogManager.createTable(TEAMS_TABLE_NAME, TEAMS_SCHEMA);
+  public void selectNumOctoberGames() {
+    createHockeyTables();
+    fillHockeyData();
 
-    // CREATE TABLE games (_id INTEGER PRIMARY KEY, date VARCHAR(20),
-    // home_team_id INTEGER, home_team_score INTEGER,
-    // away_team_id INTEGER, away_team_score INTEGER);
-    catalogManager.createTable(GAMES_TABLE_NAME, GAMES_SCHEMA);
-
-    TableDescriptor teamsTable = catalogManager.getTable(TEAMS_TABLE_NAME);
-    TableDescriptor gamesTable = catalogManager.getTable(GAMES_TABLE_NAME);
-
-    // INSERT INTO teams (name, city) VALUES
-    // ('Maple Leafs', 'Toronto'),
-    // ('Canadians', 'Montreal'),
-    // ('Flames', 'Calgary');
-    Record record = new Record(TEAMS_SCHEMA);
-    record.setAll(0, "Maple Leafs", "Toronto");
-    heapManager.insert(teamsTable, record);
-    record.setAll(0, "Canadians", "Montreal");
-    heapManager.insert(teamsTable, record);
-    record.setAll(0, "Flames", "Calgary");
-    heapManager.insert(teamsTable, record);
-
-    int leafsTeamId = getTeamId("Maple Leafs");
-    int canadiansTeamId = getTeamId("Canadians");
-    int flamesTeamId = getTeamId("Flames");
-
-    // INSERT INTO games (home_team_id, home_team_score, away_team_id, away_team_score) VALUES
-    record = new Record(GAMES_SCHEMA);
-    record.setAll(0, "2017-01-01", leafsTeamId, 1, canadiansTeamId, 2);
-    heapManager.insert(gamesTable, record);
-    record.setAll(0, "2017-01-02", leafsTeamId, 2, flamesTeamId, 5);
-    heapManager.insert(gamesTable, record);
-    record.setAll(0, "2017-01-03", canadiansTeamId, 0, flamesTeamId, 1);
-    heapManager.insert(gamesTable, record);
-    record.setAll(0, "2017-01-04", canadiansTeamId, 1, leafsTeamId, 1);
-    heapManager.insert(gamesTable, record);
-    record.setAll(0, "2017-01-05", flamesTeamId, 6, leafsTeamId, 3);
-    heapManager.insert(gamesTable, record);
-    record.setAll(0, "2017-01-06", flamesTeamId, 2, canadiansTeamId, 1);
-    heapManager.insert(gamesTable, record);
-
-    // SELECT city, away_team_score
-    // FROM teams
-    // INNER JOIN games ON teams._id = games.home_team_id
-    // WHERE away_team_id = ?
-
-    DbIterator teamsScan = heapManager.getScan(teamsTable);
-    assertThat(DbIteratorUtil.openCountClose(teamsScan)).isEqualTo(3);
+    // SELECT * FROM games WHERE date >= '2017-10-01' AND date < '2018-11-01' -> num rows
+    TableDescriptor gamesTable = catalogManager.getTable(GamesTable.TABLE_NAME);
     DbIterator gamesScan = heapManager.getScan(gamesTable);
-    assertThat(DbIteratorUtil.openCountClose(gamesScan)).isEqualTo(6);
-    DbIterator gamesProjection = new Projection(gamesScan, "home_team_id", "away_team_id", "away_team_score");
-    Expression gamesExpression =
-        new ComparisonExpression(
-            new ColumnExpression("away_team_id"),
-            ComparisonExpression.ComparisonOperator.EQUAL,
-            new LiteralExpression(ColumnType.INTEGER, flamesTeamId));
-    DbIterator gamesFilter = new Selection(gamesProjection, gamesExpression);
-    assertThat(DbIteratorUtil.openCountClose(gamesFilter)).isEqualTo(2);
-
-    DbIterator join = new NestedLoopJoin(teamsScan, gamesFilter);
-    assertThat(DbIteratorUtil.openCountClose(join)).isEqualTo(6);
-    Expression joinExpression =
-        new ComparisonExpression(
-            new ColumnExpression("_id"),
-            ComparisonExpression.ComparisonOperator.EQUAL,
-            new ColumnExpression("home_team_id"));
-    DbIterator joinFilter = new Selection(join, joinExpression);
-    assertThat(DbIteratorUtil.openCountClose(joinFilter)).isEqualTo(2);
-    DbIterator joinProjection = new Projection(joinFilter, "city", "away_team_score");
-    assertThat(DbIteratorUtil.openCountClose(joinProjection)).isEqualTo(2);
-    printResult(joinProjection, "final");
-    List<Record> recordList = DbIteratorUtil.openReadAllClose(joinProjection);
-    assertThat(recordList.get(0).get("city")).isEqualTo("Toronto");
-    assertThat(recordList.get(1).get("city")).isEqualTo("Montreal");
-  }
-
-  private void printResult(DbIterator iterator, String title) {
-    System.err.println("RESULTS");
-    System.err.println("=======");
-    System.err.println("Title: " + title);
-    System.err.println("Iterator: " + iterator);
-    iterator.open();
-    System.err.println("Schema: " + iterator.getSchema());
-    iterator.close();
-    System.err.println("Records: ");
-    List<Record> recordList = DbIteratorUtil.openReadAllClose(iterator);
-    for (Record item : recordList) {
-      System.err.println(item);
-    }
-  }
-
-  private int getTeamId(String teamName) {
-    TableDescriptor teamsTable = catalogManager.getTable(TEAMS_TABLE_NAME);
-
-    // SELECT _id FROM teams WHERE name = ?
-    DbIterator scan = heapManager.getScan(teamsTable);
     Expression expression =
-        new ComparisonExpression(
-            new ColumnExpression("name"),
-            ComparisonExpression.ComparisonOperator.EQUAL,
-            new LiteralExpression(ColumnType.STRING, teamName));
-    DbIterator filter = new Selection(scan, expression);
-    DbIterator projection = new Projection(filter, Column.ROW_ID_NAME);
+        new BooleanExpression(
+            new ComparisonExpression(
+                new ColumnExpression(GamesTable.Columns.DATE),
+                ComparisonExpression.ComparisonOperator.GREATER_THAN_OR_EQUAL,
+                new LiteralExpression(ColumnType.STRING, "2017-10-01")),
+            BooleanExpression.BooleanOperator.AND,
+            new ComparisonExpression(
+                new ColumnExpression(GamesTable.Columns.DATE),
+                ComparisonExpression.ComparisonOperator.LESS_THAN,
+                new LiteralExpression(ColumnType.STRING, "2017-11-01")));
+    DbIterator selection = new Selection(gamesScan, expression);
+    int teamsCount = DbIteratorUtil.openCountClose(selection);
+    assertThat(teamsCount).isEqualTo(12);
+  }
 
-    int rowId = -1;
-    projection.open();
-    if (projection.hasNext()) {
-      Record record = projection.next();
-      rowId = record.getRowId();
-    }
-    projection.close();
-    return rowId;
+  @Test
+  public void selectNumNovemberHomeWinGames() {
+    createHockeyTables();
+    fillHockeyData();
+
+    // SELECT _id FROM teams WHERE city = 'Calgary';
+    int calgaryTeamId = findTeamIdByCity("Calgary");
+
+    // SELECT * FROM games WHERE date >= '2017-11-01' AND date < '2018-12-01' -> num rows
+    TableDescriptor gamesTable = catalogManager.getTable(GamesTable.TABLE_NAME);
+    DbIterator gamesScan = heapManager.getScan(gamesTable);
+    Expression expression =
+        new BooleanExpression(
+          new BooleanExpression(
+              new ComparisonExpression(
+                  new ColumnExpression(GamesTable.Columns.DATE),
+                  ComparisonExpression.ComparisonOperator.GREATER_THAN_OR_EQUAL,
+                  new LiteralExpression(ColumnType.STRING, "2017-11-01")),
+              BooleanExpression.BooleanOperator.AND,
+              new ComparisonExpression(
+                  new ColumnExpression(GamesTable.Columns.DATE),
+                  ComparisonExpression.ComparisonOperator.LESS_THAN,
+                  new LiteralExpression(ColumnType.STRING, "2017-12-01"))),
+        BooleanExpression.BooleanOperator.AND,
+            new BooleanExpression(
+                new ComparisonExpression(
+                    new ColumnExpression(GamesTable.Columns.HOME_TEAM_ID),
+                    ComparisonExpression.ComparisonOperator.EQUAL,
+                    new LiteralExpression(ColumnType.INTEGER, calgaryTeamId)),
+                BooleanExpression.BooleanOperator.AND,
+                new ComparisonExpression(
+                    new ColumnExpression(GamesTable.Columns.HOME_TEAM_SCORE),
+                    ComparisonExpression.ComparisonOperator.GREATER_THAN,
+                    new ColumnExpression(GamesTable.Columns.AWAY_TEAM_SCORE))));
+    DbIterator selection = new Selection(gamesScan, expression);
+    int teamsCount = DbIteratorUtil.openCountClose(selection);
+    assertThat(teamsCount).isEqualTo(5);
+  }
+
+  @Test
+  public void joinDivisionsToTeamsAndSortCityNames() {
+    createHockeyTables();
+    fillHockeyData();
+
+    TableDescriptor divisionsTable = catalogManager.getTable(DivisionsTable.TABLE_NAME);
+    TableDescriptor teamsTable = catalogManager.getTable(TeamsTable.TABLE_NAME);
+
+    // SELECT city
+    // FROM divisions
+    //   INNER JOIN teams ON team.division_id = divisions._id
+    // WHERE divisions.name = 'Atlantic'
+
+    DbIterator divisionsScan = heapManager.getScan(divisionsTable);
+    Expression divisionFilter =
+        new ComparisonExpression(
+            new ColumnExpression(DivisionsTable.Columns.NAME),
+            ComparisonExpression.ComparisonOperator.EQUAL,
+            new LiteralExpression(ColumnType.STRING, "Atlantic"));
+    DbIterator divisionSelection = new Selection(divisionsScan, divisionFilter);
+    DbIterator divisionProjection = new Projection(divisionSelection, DivisionsTable.Columns.ID);
+
+    DbIterator teamsScan = heapManager.getScan(teamsTable);
+    DbIterator teamsProjection = new Projection(teamsScan, TeamsTable.Columns.CITY, TeamsTable.Columns.DIVISION_ID);
+
+    DbIterator joinIter = new NestedLoopJoin(divisionProjection, teamsProjection);
+    Expression joinCondition =
+        new ComparisonExpression(
+            new ColumnExpression(DivisionsTable.Columns.ID),
+            ComparisonExpression.ComparisonOperator.EQUAL,
+            new ColumnExpression(TeamsTable.Columns.DIVISION_ID));
+    DbIterator joinWithOnClause = new Selection(joinIter, joinCondition);
+    DbIterator sortedCities =
+        new Sort(
+            new Projection(joinWithOnClause, TeamsTable.Columns.CITY),
+            new SortColumn(TeamsTable.Columns.CITY, SortColumn.SortDirection.DESCENDING));
+
+    List<Object> cities = DbIteratorUtil.openReadAllColumnClose(sortedCities, TeamsTable.Columns.CITY);
+    assertThat(cities)
+        .containsExactly( "Toronto", "Tampa Bay", "Ottawa", "Montreal", "Florida", "Detroit", "Buffalo", "Boston")
+        .inOrder();
+  }
+
+  @Test
+  public void selectHighScoringTeams() {
+    createHockeyTables();
+    fillHockeyData();
+
+    TableDescriptor teamsTable = catalogManager.getTable(TeamsTable.TABLE_NAME);
+    TableDescriptor gamesTable = catalogManager.getTable(GamesTable.TABLE_NAME);
+
+    // SELECT games.date, teams.name
+    // FROM games
+    //   INNER JOIN teams ON teams._id = games.home_team_id
+    // WHERE home_team_score + away_team_score > 8
+
+    DbIterator teamsScan = heapManager.getScan(teamsTable);
+    DbIterator teamsProjected = new Projection(teamsScan, TeamsTable.Columns.ID, TeamsTable.Columns.NAME);
+
+    DbIterator gamesScan = heapManager.getScan(gamesTable);
+    Expression gamesFilter =
+        new ComparisonExpression(
+            new ArithmeticExpression(
+                new ColumnExpression(GamesTable.Columns.HOME_TEAM_SCORE),
+                ArithmeticExpression.ArithmeticOperation.ADDITION,
+                new ColumnExpression(GamesTable.Columns.AWAY_TEAM_SCORE)),
+            ComparisonExpression.ComparisonOperator.GREATER_THAN,
+            new LiteralExpression(ColumnType.INTEGER, 8)
+        );
+    DbIterator gamesFiltered = new Selection(gamesScan, gamesFilter);
+    DbIterator gamesProjected = new Projection(gamesFiltered, GamesTable.Columns.DATE, GamesTable.Columns.HOME_TEAM_ID);
+
+    DbIterator joined = new NestedLoopJoin(gamesProjected, teamsProjected);
+    Expression joinFilter =
+        new ComparisonExpression(
+            new ColumnExpression(GamesTable.Columns.HOME_TEAM_ID),
+            ComparisonExpression.ComparisonOperator.EQUAL,
+            new ColumnExpression(TeamsTable.Columns.ID));
+    DbIterator joinFiltered = new Selection(joined, joinFilter);
+    DbIterator joinProjected = new Projection(joinFiltered, GamesTable.Columns.DATE, TeamsTable.Columns.NAME);
+    DbIterator sortedIterator =
+        new Sort(joinProjected, new SortColumn(GamesTable.Columns.DATE, SortColumn.SortDirection.DESCENDING));
+
+    List<Object> dateList = DbIteratorUtil.openReadAllColumnClose(sortedIterator, GamesTable.Columns.DATE);
+    assertThat(dateList)
+        .containsAllOf("2018-03-16", "2018-02-21", "2018-02-17", "2018-02-01")
+        .inOrder();
+
+    List<Object> teamNameList = DbIteratorUtil.openReadAllColumnClose(sortedIterator, TeamsTable.Columns.NAME);
+    assertThat(teamNameList)
+        .containsAllOf("Flames", "Golden Knights", "Flames", "Flames", "Flames", "Stars", "Flyers", "Red Wings")
+        .inOrder();
   }
 }
