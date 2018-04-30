@@ -32,7 +32,11 @@ public final class ArithmeticExpression implements Expression {
 
   @Override
   public Object getValue(Record record) {
-    return isDouble(record) ? getDoubleValue(record) : getIntValue(record);
+    if (isDouble(record)) {
+      return getDoubleValue(record);
+    } else {
+      return getIntValue(record);
+    }
   }
 
   private boolean isDouble(Record record) {
@@ -42,8 +46,8 @@ public final class ArithmeticExpression implements Expression {
   }
 
   private double getDoubleValue(Record record) {
-    double leftValue = (Double) left.getValue(record);
-    double rightValue = (Double) right.getValue(record);
+    double leftValue = ((Number) left.getValue(record)).doubleValue();
+    double rightValue = ((Number) right.getValue(record)).doubleValue();
     switch (op) {
       case MODULO:
         return leftValue % rightValue;
