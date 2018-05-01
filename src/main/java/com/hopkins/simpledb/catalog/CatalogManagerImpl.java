@@ -12,6 +12,10 @@ import com.hopkins.simpledb.operations.Selection;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Keeps track of the tables, indexes, and views in the database.  Reads and writes data to/from the
+ * {@link CatalogTable}.
+ */
 public class CatalogManagerImpl implements CatalogManager {
   private static final int CATALOG_TABLE_ROOT_PAGE = 0;
 

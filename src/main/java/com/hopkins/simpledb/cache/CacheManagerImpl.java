@@ -29,8 +29,8 @@ public class CacheManagerImpl implements CacheManager {
     this.diskFileManager = diskFileManager;
 
     maxPages = config.getCacheSize() / config.getPageSize();
-    this.pageList = new ArrayList<>(maxPages);
-    this.pageLookup = new HashMap<>(maxPages);
+    pageList = new ArrayList<>(maxPages);
+    pageLookup = new HashMap<>(maxPages);
   }
 
   @Override
@@ -60,6 +60,9 @@ public class CacheManagerImpl implements CacheManager {
   }
 
   private void evictPage(Page page) {
+    if (logger.isLoggable(Level.FINER)) {
+      logger.log(Level.FINER, "evictPage(" + page.getPageNumber() + ")");
+    }
     if (page.isDirty()) {
       writePage(page);
     }
@@ -152,5 +155,16 @@ public class CacheManagerImpl implements CacheManager {
     for (int i = 0; i < config.getPageSize(); i++) {
       buffer[i] = 0;
     }
+  }
+
+  @Override
+  public int getNumPinnedPages() {
+    int num = 0;
+    for (Page page : pageList) {
+      if (page.getPinCount() > 0) {
+        num++;
+      }
+    }
+    return num;
   }
 }

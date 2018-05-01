@@ -4,7 +4,18 @@ import com.hopkins.simpledb.data.*;
 
 import java.util.Arrays;
 
-public class CatalogTable {
+/**
+ * A table which stores the database schema.
+ *
+ * <p>The catalog table is a system table and cannot be modified directly; only via DDL statements.  Note: the catalog
+ * table does NOT include an entry for the catalog table itself.
+ *
+ * <p>The catalog table is NOT indexed.  Since there will only be hundreds of tables in a given database, an index
+ * wouldn't provide much benefit anyway.
+ *
+ * <p>The user can query the catalog table just like any other table.
+ */
+public final class CatalogTable {
   public static final int DATA_LENGTH = 300;
 
   public interface Columns {
