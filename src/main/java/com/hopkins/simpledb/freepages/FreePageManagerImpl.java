@@ -40,6 +40,8 @@ public class FreePageManagerImpl implements FreePageManager {
     int freePageNumber = rootFreePage.getNextFreePage();
 
     if (freePageNumber == FreePageManager.NO_FREE_PAGE_INDEX) {
+      rootFreePage.unpin();
+
       // No free pages, allocate a new page
       FreePage freePage = FreePage.initializePage(cacheManager.getNewPage());
       freePageNumber = freePage.getPageNumber();
@@ -53,6 +55,7 @@ public class FreePageManagerImpl implements FreePageManager {
 
     // Update the root page
     rootFreePage.setNextFreePage(nextFreePageNumber);
+    rootFreePage.unpin();
 
     return freePageNumber;
   }

@@ -1,12 +1,9 @@
 package com.hopkins.simpledb.root;
 
-import static com.hopkins.simpledb.operations.DbIteratorUtil.openReadAllColumnClose;
 import static com.hopkins.simpledb.root.HockeyData.*;
 
-import com.hopkins.simpledb.RecordUtil;
 import com.hopkins.simpledb.app.*;
 import com.hopkins.simpledb.catalog.TableDescriptor;
-import com.hopkins.simpledb.data.Column;
 import com.hopkins.simpledb.data.ColumnType;
 import com.hopkins.simpledb.data.Record;
 import com.hopkins.simpledb.expression.*;
@@ -18,7 +15,6 @@ import org.junit.Test;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 import static com.google.common.truth.Truth.assertThat;
@@ -29,7 +25,6 @@ public class IntegrationTest {
   private Config config;
   private CatalogManager catalogManager;
   private HeapManager heapManager;
-  private DiskFileManager diskFileManager;
   private String fileName;
 
   @Before
@@ -45,7 +40,6 @@ public class IntegrationTest {
     config = locator.get(Config.class);
     catalogManager = locator.get(CatalogManager.class);
     heapManager = locator.get(HeapManager.class);
-    diskFileManager = locator.get(DiskFileManager.class);
   }
 
   @After
@@ -157,6 +151,23 @@ public class IntegrationTest {
     catalogManager.createTable(TeamsTable.TABLE_NAME, TeamsTable.SCHEMA);
 
     assertThat(catalogManager.hasTable(TeamsTable.TABLE_NAME)).isTrue();
+  }
+
+  @Test
+  public void dataDefinitionsDoNotLeakPages() {
+    createHockeyTables();
+
+    CacheManager cacheManager = app.getServiceLocator().get(CacheManager.class);
+    assertThat(cacheManager.getNumPinnedPages()).isEqualTo(0);
+  }
+
+  @Test
+  public void dataMutationsDoNotLeakPages() {
+    createHockeyTables();
+    fillHockeyData();
+
+    CacheManager cacheManager = app.getServiceLocator().get(CacheManager.class);
+    assertThat(cacheManager.getNumPinnedPages()).isEqualTo(0);
   }
 
   @Test
