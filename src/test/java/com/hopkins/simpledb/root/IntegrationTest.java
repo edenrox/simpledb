@@ -215,7 +215,7 @@ public class IntegrationTest {
                 new LiteralExpression(ColumnType.STRING, "2017-11-01")));
     DbIterator selection = new Selection(gamesScan, expression);
     int teamsCount = DbIteratorUtil.openCountClose(selection);
-    assertThat(teamsCount).isEqualTo(12);
+    assertThat(teamsCount).isEqualTo(45);
   }
 
   @Test
