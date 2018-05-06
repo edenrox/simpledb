@@ -35,6 +35,7 @@ public final class HockeyData {
       String ID = Column.ROW_ID_NAME;
       String NAME = "name";
       String CITY = "city";
+      String STATE_CODE = "state_code";
       String DIVISION_ID = "division_id";
     }
 
@@ -43,42 +44,43 @@ public final class HockeyData {
             Column.newIntColumn(Columns.ID),
             Column.newStringColumn(Columns.NAME, 32),
             Column.newStringColumn(Columns.CITY, 32),
+            Column.newStringColumn(Columns.STATE_CODE, 2),
             Column.newIntColumn(Columns.DIVISION_ID)));
   }
 
   public static final Object[][] TEAMS_DATA =
       new Object[][] {
-          new Object[] {0, "Bruins", "Boston", 1},
-          new Object[] {0, "Sabres", "Buffalo", 1},
-          new Object[] {0, "Red Wings", "Detroit", 1},
-          new Object[] {0, "Panthers", "Florida", 1},
-          new Object[] {0, "Canadiens", "Montreal", 1},
-          new Object[] {0, "Senators", "Ottawa", 1},
-          new Object[] {0, "Lightning", "Tampa Bay", 1},
-          new Object[] {0, "Maple Leafs", "Toronto", 1},
-          new Object[] {0, "Hurricanes", "Carolina", 2},
-          new Object[] {0, "Blue Jackets", "Columbus", 2},
-          new Object[] {0, "Devils", "New Jersey", 2},
-          new Object[] {0, "Islanders", "New York", 2},
-          new Object[] {0, "Rangers", "New York", 2},
-          new Object[] {0, "Flyers", "Philadelphia", 2},
-          new Object[] {0, "Penguins", "Pittsburgh", 2},
-          new Object[] {0, "Capitals", "Washington", 2},
-          new Object[] {0, "Blackhawks", "Chicago", 3},
-          new Object[] {0, "Avalanche", "Colorado", 3},
-          new Object[] {0, "Stars", "Dallas", 3},
-          new Object[] {0, "Wild", "Minnesota", 3},
-          new Object[] {0, "Predators", "Nashville", 3},
-          new Object[] {0, "Blues", "St. Louis", 3},
-          new Object[] {0, "Jets", "Winnipeg", 3},
-          new Object[] {0, "Ducks", "Anaheim", 4},
-          new Object[] {0, "Coyotes", "Arizona", 4},
-          new Object[] {0, "Flames", "Calgary", 4},
-          new Object[] {0, "Oilers", "Edmonton", 4},
-          new Object[] {0, "Kings", "Los Angeles", 4},
-          new Object[] {0, "Sharks", "San Jose", 4},
-          new Object[] {0, "Canucks", "Vancouver", 4},
-          new Object[] {0, "Golden Knights", "Vegas", 4},
+          new Object[] {0, "Bruins", "Boston", "MA", 1},
+          new Object[] {0, "Sabres", "Buffalo", "NY", 1},
+          new Object[] {0, "Red Wings", "Detroit", "MI", 1},
+          new Object[] {0, "Panthers", "Florida", "FL", 1},
+          new Object[] {0, "Canadiens", "Montreal", "QC", 1},
+          new Object[] {0, "Senators", "Ottawa", "ON", 1},
+          new Object[] {0, "Lightning", "Tampa Bay", "FL", 1},
+          new Object[] {0, "Maple Leafs", "Toronto", "ON", 1},
+          new Object[] {0, "Hurricanes", "Carolina", "NC", 2},
+          new Object[] {0, "Blue Jackets", "Columbus", "OH", 2},
+          new Object[] {0, "Devils", "New Jersey", "NJ", 2},
+          new Object[] {0, "Islanders", "New York", "NY", 2},
+          new Object[] {0, "Rangers", "New York", "NY", 2},
+          new Object[] {0, "Flyers", "Philadelphia", "PA", 2},
+          new Object[] {0, "Penguins", "Pittsburgh", "PA", 2},
+          new Object[] {0, "Capitals", "Washington", "DC", 2},
+          new Object[] {0, "Blackhawks", "Chicago", "IL", 3},
+          new Object[] {0, "Avalanche", "Colorado", "CO", 3},
+          new Object[] {0, "Stars", "Dallas", "TX", 3},
+          new Object[] {0, "Wild", "Minnesota", "MN", 3},
+          new Object[] {0, "Predators", "Nashville", "TN", 3},
+          new Object[] {0, "Blues", "St. Louis", "MO", 3},
+          new Object[] {0, "Jets", "Winnipeg", "MB", 3},
+          new Object[] {0, "Ducks", "Anaheim", "CA", 4},
+          new Object[] {0, "Coyotes", "Arizona", "AZ", 4},
+          new Object[] {0, "Flames", "Calgary", "AB", 4},
+          new Object[] {0, "Oilers", "Edmonton", "AB", 4},
+          new Object[] {0, "Kings", "Los Angeles", "CA", 4},
+          new Object[] {0, "Sharks", "San Jose", "CA", 4},
+          new Object[] {0, "Canucks", "Vancouver", "BC", 4},
+          new Object[] {0, "Golden Knights", "Vegas", "NV", 4},
       };
 
   public static final class GamesTable {
@@ -106,9 +108,9 @@ public final class HockeyData {
   public static final Object[][] GAMES_DATA =
       new Object[][] {
 
-          ///////////////
-          // Flames Games
-          ///////////////
+          ////////////////
+          // Calgary games
+          ////////////////
 
           // October games
           new Object[] {0, "2017-10-04", "Edmonton", 3, "Calgary", 0},
@@ -506,5 +508,105 @@ public final class HockeyData {
           new Object[] {0, "2018-04-03", "Vancouver", 4, "Vegas", 5},
           new Object[] {0, "2018-04-05", "Vancouver", 4, "Arizona", 3},
           new Object[] {0, "2018-04-07", "Edmonton", 3, "Vancouver", 2},
+
+          /////////////////
+          // Winnipeg games
+          /////////////////
+
+          // October games
+          //new Object[] {0, "2017-10-04", "Winnipeg", 2, "Toronto", 7},
+          //new Object[] {0, "2017-10-07", "Calgary", 6, "Winnipeg", 3},
+          new Object[] {0, "2017-10-09", "Edmonton", 2, "Winnipeg", 5},
+          //new Object[] {0, "2017-10-12", "Vancouver", 2, "Winnipeg", 4},
+          new Object[] {0, "2017-10-14", "Winnipeg", 2, "Carolina", 1},
+          new Object[] {0, "2017-10-17", "Winnipeg", 2, "Columbus", 5},
+          new Object[] {0, "2017-10-20", "Winnipeg", 4, "Minnesota", 3},
+          new Object[] {0, "2017-10-26", "Pittsburgh", 2, "Winnipeg", 1},
+          new Object[] {0, "2017-10-27", "Columbus", 2, "Winnipeg", 1},
+          new Object[] {0, "2017-10-29", "Winnipeg", 7, "Pittsburgh", 1},
+          new Object[] {0, "2017-10-31", "Minnesota", 1, "Winnipeg", 2},
+
+          // November games
+          new Object[] {0, "2017-11-02", "Winnipeg", 5, "Dallas", 2},
+          //new Object[] {0, "2017-11-04", "Winnipeg", 4, "Montreal", 5},
+          new Object[] {0, "2017-11-06", "Dallas", 1, "Winnipeg", 4},
+          new Object[] {0, "2017-11-10", "Vegas", 5, "Winnipeg", 2},
+          new Object[] {0, "2017-11-11", "Arizona", 1, "Winnipeg", 4},
+          new Object[] {0, "2017-11-14", "Winnipeg", 4, "Arizona", 1},
+          new Object[] {0, "2017-11-16", "Winnipeg", 3, "Philadelphia", 2},
+          new Object[] {0, "2017-11-18", "Winnipeg", 5, "New Jersey", 2},
+          new Object[] {0, "2017-11-20", "Nashville", 5, "Winnipeg", 3},
+          new Object[] {0, "2017-11-22", "Los Angeles", 1, "Winnipeg", 2},
+          new Object[] {0, "2017-11-24", "Anaheim", 1, "Winnipeg", 4},
+          new Object[] {0, "2017-11-25", "San Jose", 4, "Winnipeg", 0},
+          new Object[] {0, "2017-11-27", "Winnipeg", 7, "Minnesota", 2},
+          new Object[] {0, "2017-11-29", "Colorado", 3, "Winnipeg", 2},
+
+          // December games
+          new Object[] {0, "2017-12-01", "Winnipeg", 7, "Vegas", 4},
+          new Object[] {0, "2017-12-03", "Winnipeg", 5, "Ottawa", 0},
+          new Object[] {0, "2017-12-05", "Detroit", 5, "Winnipeg", 1},
+          new Object[] {0, "2017-12-07", "Florida", 6, "Winnipeg", 4},
+          new Object[] {0, "2017-12-09", "Tampa Bay", 4, "Winnipeg", 3},
+          //new Object[] {0, "2017-12-11", "Winnipeg", 5, "Vancouver", 1},
+          new Object[] {0, "2017-12-14", "Winnipeg", 1, "Chicago", 5},
+          new Object[] {0, "2017-12-16", "St. Louis", 2, "Winnipeg", 0},
+          new Object[] {0, "2017-12-17", "Winnipeg", 4, "St. Louis", 0},
+          new Object[] {0, "2017-12-19", "Nashville", 4, "Winnipeg", 6},
+          new Object[] {0, "2017-12-21", "Boston", 2, "Winnipeg", 1},
+          new Object[] {0, "2017-12-23", "New York Islanders", 5, "Winnipeg", 2},
+          new Object[] {0, "2017-12-27", "Winnipeg", 4, "Edmonton", 3},
+          new Object[] {0, "2017-12-29", "Winnipeg", 4, "New York Islanders", 2},
+          new Object[] {0, "2017-12-31", "Edmonton", 0, "Winnipeg", 5},
+
+          // January games
+          new Object[] {0, "2018-01-02", "Colorado", 3, "Winnipeg", 2},
+          new Object[] {0, "2018-01-05", "Winnipeg", 4, "Buffalo", 3},
+          new Object[] {0, "2018-01-07", "Winnipeg", 4, "San Jose", 1},
+          new Object[] {0, "2018-01-09", "Buffalo", 4, "Winnipeg", 7},
+          new Object[] {0, "2018-01-12", "Chicago", 2, "Winnipeg", 1},
+          new Object[] {0, "2018-01-13", "Minnesota", 4, "Winnipeg", 1},
+          //new Object[] {0, "2018-01-20", "Calgary", 1, "Winnipeg", 2},
+          //new Object[] {0, "2018-01-21", "Winnipeg", 1, "Vancouver", 0},
+          new Object[] {0, "2018-01-23", "San Jose", 4, "Winnipeg", 5},
+          new Object[] {0, "2018-01-25", "Anaheim", 4, "Winnipeg", 3},
+          new Object[] {0, "2018-01-30", "Winnipeg", 3, "Tampa Bay", 1},
+
+          // February games
+          new Object[] {0, "2018-02-01", "Winnipeg", 2, "Vegas", 3},
+          new Object[] {0, "2018-02-03", "Winnipeg", 3, "Colorado", 0},
+          new Object[] {0, "2018-02-06", "Winnipeg", 4, "Arizona", 3},
+          new Object[] {0, "2018-02-09", "Winnipeg", 2, "St. Louis", 5},
+          new Object[] {0, "2018-02-11", "Winnipeg", 1, "New York Rangers", 3},
+          new Object[] {0, "2018-02-13", "Winnipeg", 4, "Washington", 3},
+          new Object[] {0, "2018-02-16", "Winnipeg", 6, "Colorado", 1},
+          new Object[] {0, "2018-02-18", "Winnipeg", 7, "Florida", 2},
+          new Object[] {0, "2018-02-20", "Winnipeg", 3, "Los Angeles", 4},
+          new Object[] {0, "2018-02-23", "St. Louis", 0, "Winnipeg", 4},
+          new Object[] {0, "2018-02-24", "Dallas", 3, "Winnipeg", 5},
+          new Object[] {0, "2018-02-27", "Winnipeg", 5, "Nashville", 6},
+
+          // March games
+          new Object[] {0, "2018-03-02", "Winnipeg", 4, "Detroit", 3},
+          new Object[] {0, "2018-03-04", "Carolina", 2, "Winnipeg", 3},
+          new Object[] {0, "2018-03-06", "New York Rangers", 0, "Winnipeg", 3},
+          new Object[] {0, "2018-03-08", "New Jersey", 2, "Winnipeg", 3},
+          new Object[] {0, "2018-03-10", "Philadelphia", 2, "Winnipeg", 1},
+          new Object[] {0, "2018-03-12", "Washington", 3, "Winnipeg", 2},
+          new Object[] {0, "2018-03-13", "Nashville", 3, "Winnipeg", 1},
+          new Object[] {0, "2018-03-15", "Winnipeg", 6, "Chicago", 2},
+          new Object[] {0, "2018-03-18", "Winnipeg", 4, "Dallas", 2},
+          new Object[] {0, "2018-03-20", "Winnipeg", 2, "Los Angeles", 1},
+          new Object[] {0, "2018-03-23", "Winnipeg", 3, "Anaheim", 2},
+          new Object[] {0, "2018-03-25", "Winnipeg", 5, "Nashville", 4},
+          new Object[] {0, "2018-03-27", "Winnipeg", 5, "Boston", 4},
+          new Object[] {0, "2018-03-29", "Chicago", 6, "Winnipeg", 2},
+          //new Object[] {0, "2018-03-31", "Toronto", 1, "Winnipeg", 3},
+
+          // April games
+          new Object[] {0, "2018-04-02", "Ottawa", 5, "Winnipeg", 6},
+          //new Object[] {0, "2018-04-03", "Montreal", 4, "Winnipeg", 5},
+          //new Object[] {0, "2018-04-05", "Winnipeg", 2, "Calgary", 1},
+          new Object[] {0, "2018-04-07", "Winnipeg", 4, "Chicago", 1},
       };
 }

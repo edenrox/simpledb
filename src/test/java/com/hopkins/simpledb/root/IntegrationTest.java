@@ -48,32 +48,40 @@ public class IntegrationTest {
     file.delete();
   }
 
-  private void createHockeyTables() {
+  private void createTables() {
+    catalogManager.createTable(RegionData.CountriesTable.TABLE_NAME, RegionData.CountriesTable.SCHEMA);
+    catalogManager.createTable(RegionData.StatesTable.TABLE_NAME, RegionData.StatesTable.SCHEMA);
+
     catalogManager.createTable(DivisionsTable.TABLE_NAME, DivisionsTable.SCHEMA);
     catalogManager.createTable(TeamsTable.TABLE_NAME, TeamsTable.SCHEMA);
     catalogManager.createTable(GamesTable.TABLE_NAME, GamesTable.SCHEMA);
   }
 
-  private void fillHockeyData() {
-    // INSERT INTO divisions
-    TableDescriptor divisionsTable = catalogManager.getTable(DivisionsTable.TABLE_NAME);
-    Record record = new Record(divisionsTable.getSchema());
-    for (Object[] row : DIVISIONS_DATA) {
+  private void fillTable(String tableName, Object[][] data) {
+    TableDescriptor tableDescriptor = catalogManager.getTable(tableName);
+    Record record = new Record(tableDescriptor.getSchema());
+    for (Object[] row : data) {
       record.setAll(row);
-      heapManager.insert(divisionsTable, record);
+      heapManager.insert(tableDescriptor, record);
     }
+  }
+
+  private void fillData() {
+    // INSERT INTO countries
+    fillTable(RegionData.CountriesTable.TABLE_NAME, RegionData.COUNTRIES_DATA);
+
+    // INSERT INTO states
+    fillTable(RegionData.StatesTable.TABLE_NAME, RegionData.STATES_DATA);
+
+    // INSERT INTO divisions
+    fillTable(DivisionsTable.TABLE_NAME, DIVISIONS_DATA);
 
     // INSERT INTO teams
-    TableDescriptor teamsTable = catalogManager.getTable(TeamsTable.TABLE_NAME);
-    record = new Record(teamsTable.getSchema());
-    for (Object[] row : TEAMS_DATA) {
-      record.setAll(row);
-      heapManager.insert(teamsTable, record);
-    }
+    fillTable(TeamsTable.TABLE_NAME, TEAMS_DATA);
 
     // INSERT INTO games
     TableDescriptor gamesTable = catalogManager.getTable(GamesTable.TABLE_NAME);
-    record = new Record(gamesTable.getSchema());
+    Record record = new Record(gamesTable.getSchema());
     for (Object[] sourceRow : GAMES_DATA) {
       Object[] row = Arrays.copyOf(sourceRow, sourceRow.length);
 
@@ -155,7 +163,7 @@ public class IntegrationTest {
 
   @Test
   public void dataDefinitionsDoNotLeakPages() {
-    createHockeyTables();
+    createTables();
 
     CacheManager cacheManager = app.getServiceLocator().get(CacheManager.class);
     assertThat(cacheManager.getNumPinnedPages()).isEqualTo(0);
@@ -163,8 +171,8 @@ public class IntegrationTest {
 
   @Test
   public void dataMutationsDoNotLeakPages() {
-    createHockeyTables();
-    fillHockeyData();
+    createTables();
+    fillData();
 
     CacheManager cacheManager = app.getServiceLocator().get(CacheManager.class);
     assertThat(cacheManager.getNumPinnedPages()).isEqualTo(0);
@@ -172,8 +180,8 @@ public class IntegrationTest {
 
   @Test
   public void selectDivisionNames() {
-    createHockeyTables();
-    fillHockeyData();
+    createTables();
+    fillData();
 
     // SELECT name FROM divisions
     TableDescriptor divisionsTable = catalogManager.getTable(DivisionsTable.TABLE_NAME);
@@ -184,8 +192,8 @@ public class IntegrationTest {
 
   @Test
   public void selectNumTeams() {
-    createHockeyTables();
-    fillHockeyData();
+    createTables();
+    fillData();
 
     // SELECT * FROM teams -> num rows
     TableDescriptor teamsTable = catalogManager.getTable(TeamsTable.TABLE_NAME);
@@ -196,8 +204,8 @@ public class IntegrationTest {
 
   @Test
   public void selectNumOctoberGames() {
-    createHockeyTables();
-    fillHockeyData();
+    createTables();
+    fillData();
 
     // SELECT * FROM games WHERE date >= '2017-10-01' AND date < '2018-11-01' -> num rows
     TableDescriptor gamesTable = catalogManager.getTable(GamesTable.TABLE_NAME);
@@ -215,13 +223,13 @@ public class IntegrationTest {
                 new LiteralExpression(ColumnType.STRING, "2017-11-01")));
     DbIterator selection = new Selection(gamesScan, expression);
     int teamsCount = DbIteratorUtil.openCountClose(selection);
-    assertThat(teamsCount).isEqualTo(45);
+    assertThat(teamsCount).isEqualTo(53);
   }
 
   @Test
   public void selectNumNovemberHomeWinGames() {
-    createHockeyTables();
-    fillHockeyData();
+    createTables();
+    fillData();
 
     // SELECT _id FROM teams WHERE city = 'Calgary';
     int calgaryTeamId = findTeamIdByCity("Calgary");
@@ -259,8 +267,8 @@ public class IntegrationTest {
 
   @Test
   public void joinDivisionsToTeamsAndSortCityNames() {
-    createHockeyTables();
-    fillHockeyData();
+    createTables();
+    fillData();
 
     TableDescriptor divisionsTable = catalogManager.getTable(DivisionsTable.TABLE_NAME);
     TableDescriptor teamsTable = catalogManager.getTable(TeamsTable.TABLE_NAME);
@@ -302,8 +310,8 @@ public class IntegrationTest {
 
   @Test
   public void selectHighScoringTeams() {
-    createHockeyTables();
-    fillHockeyData();
+    createTables();
+    fillData();
 
     TableDescriptor teamsTable = catalogManager.getTable(TeamsTable.TABLE_NAME);
     TableDescriptor gamesTable = catalogManager.getTable(GamesTable.TABLE_NAME);
